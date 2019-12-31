@@ -47,7 +47,6 @@ class Game(object):
                 c = self.tiles_holder[x][y]
                 self.tiles[x][y] = Cell(c.x, c.y, c.sheet_x, c.sheet_y, 16, self.cell_size / 16, 22,
                                         15, self.sprite_group, self.sprite_sheet, c.movable)
-                print(x, y, self.tiles[x][y].movable)
 
         self.walk_up = [(15, 0), (15, 23), (15, 0), (15, 45)]
         self.walk_left = [(30, 0), (30, 23), (30, 0), (30, 45)]
@@ -204,7 +203,6 @@ class Game(object):
             pygame.key.set_repeat()
 
     def movable(self, x, y):
-        print(x, y, np.size(self.tiles, 0), np.size(self.tiles, 1))
         if y >= np.size(self.tiles, 0) or y < 0:
             return False
         elif x >= np.size(self.tiles, 1) or x < 0:
