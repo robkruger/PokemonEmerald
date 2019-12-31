@@ -46,7 +46,9 @@ class Game(object):
                 c: CellHolder
                 c = self.tiles_holder[x][y]
                 self.tiles[x][y] = Cell(c.x, c.y, c.sheet_x, c.sheet_y, 16, self.cell_size / 16, 22,
-                                        15, self.sprite_group, self.sprite_sheet)
+                                        15, self.sprite_group, self.sprite_sheet, c.movable)
+                print(x, y, self.tiles[x][y].movable)
+
         self.walk_up = [(15, 0), (15, 23), (15, 0), (15, 45)]
         self.walk_left = [(30, 0), (30, 23), (30, 0), (30, 45)]
         self.walk_down = [(0, 0), (0, 23), (0, 0), (0, 45)]
@@ -70,13 +72,25 @@ class Game(object):
                 self.Running = False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_w and not self.start_moving and not self.moving:
-                    self.start_moving_up = True
+                    if self.movable(self.player.x, self.player.y - 1):
+                        self.start_moving_up = True
+                    else:
+                        self.player.set_anim(True, False, False, False)
                 elif event.key == pygame.K_s and not self.start_moving and not self.moving:
-                    self.start_moving_down = True
+                    if self.movable(self.player.x, self.player.y + 1):
+                        self.start_moving_down = True
+                    else:
+                        self.player.set_anim(False, False, False, True)
                 elif event.key == pygame.K_a and not self.start_moving and not self.moving:
-                    self.start_moving_left = True
+                    if self.movable(self.player.x - 1, self.player.y):
+                        self.start_moving_left = True
+                    else:
+                        self.player.set_anim(False, True, False, False)
                 elif event.key == pygame.K_d and not self.start_moving and not self.moving:
-                    self.start_moving_right = True
+                    if self.movable(self.player.x + 1, self.player.y):
+                        self.start_moving_right = True
+                    else:
+                        self.player.set_anim(False, False, True, False)
 
         self.moving = self.moving_left or self.moving_right or self.moving_up or self.moving_down
         self.start_moving = self.start_moving_left or self.start_moving_right or self.start_moving_up \
@@ -188,6 +202,14 @@ class Game(object):
             pygame.key.set_repeat(delay, interval)
         else:
             pygame.key.set_repeat()
+
+    def movable(self, x, y):
+        print(x, y, np.size(self.tiles, 0), np.size(self.tiles, 1))
+        if y >= np.size(self.tiles, 0) or y < 0:
+            return False
+        elif x >= np.size(self.tiles, 1) or x < 0:
+            return False
+        return self.tiles[y][x].movable
 
     @staticmethod
     def close():

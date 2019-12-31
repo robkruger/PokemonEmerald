@@ -48,10 +48,11 @@ class MapMaker(object):
         self.tiles = np.zeros(world_size[0] * world_size[1], dtype=object).reshape(world_size[0], world_size[1])
         self.texture_tiles = np.zeros(int(texture_select_size[0] / 16) * int(window_size[1] / 16),
                                       dtype=object).reshape(int(texture_select_size[0] / 16), int(window_size[1] / 16))
+        self.left_pressed = False
         for x in range(self.grid_width):
             for y in range(self.grid_height):
                 self.tiles_holder[y][x] = (CellHolder(x, y, 1, 0, 16, self.cell_size / 16, self.offset_width,
-                                                      self.offset_height))
+                                                      self.offset_height, True))
 
         # for tx in range(self.texture_tiles_holder.shape[0]):
         #     for ty in range(self.texture_tiles_holder.shape[1]):
@@ -61,8 +62,8 @@ class MapMaker(object):
             for y in range(self.grid_height):
                 c: CellHolder
                 c = self.tiles_holder[y][x]
-                self.tiles[y][x] = Cell(c.x,  c.y, c.sheet_x, c.sheet_y, 16, self.cell_size / 16, c.offset_w,
-                                        c.offset_h, self.sprite_group, self.sprite_sheet)
+                self.tiles[y][x] = Cell(c.x, c.y, c.sheet_x, c.sheet_y, 16, self.cell_size / 16, c.offset_w,
+                                        c.offset_h, self.sprite_group, self.sprite_sheet, c.movable)
 
         # for x in range(self.texture_tiles_holder.shape[0]):
         #     for y in range(self.texture_tiles_holder.shape[1]):
@@ -91,22 +92,26 @@ class MapMaker(object):
         else:
             self.pressed = False
 
+        if pygame.mouse.get_pressed()[2]:
+            self.left_pressed = True
+        else:
+            self.left_pressed = False
+
         if key_is_down(pygame.K_SPACE):
             np.save('data.npy', self.tiles_holder)
-            self.Running = False
+            # self.Running = False
 
         if self.load:
-            print("capslock", self.load)
             np_load_old = np.load
             np.load = lambda *a, **k: np_load_old(*a, allow_pickle=True, **k)
             self.tiles_holder = np.load('data.npy')
             np.load = np_load_old
-            for x in range(self.grid_height):
-                for y in range(self.grid_height):
+            for x in range(self.tiles_holder.shape[0]):
+                for y in range(self.tiles_holder.shape[1]):
                     c: CellHolder
-                    c = self.tiles_holder[y][x]
-                    self.tiles[y][x] = Cell(c.x, c.y, c.sheet_x, c.sheet_y, c.size, self.cell_size / 16, c.offset_w,
-                                            c.offset_h, self.sprite_group, self.sprite_sheet)
+                    c = self.tiles_holder[x][y]
+                    self.tiles[x][y] = Cell(c.x, c.y, c.sheet_x, c.sheet_y, c.size, self.cell_size / 16, c.offset_w,
+                                            c.offset_h, self.sprite_group, self.sprite_sheet, c.movable)
 
         self.grid_select_x = int((pygame.mouse.get_pos()[0] - self.offset_width) / self.cell_size)
         self.grid_select_y = int((pygame.mouse.get_pos()[1] - self.offset_height) / self.cell_size)
@@ -145,23 +150,47 @@ class MapMaker(object):
                                                                                    self.select_y,
                                                                                    16, self.cell_size / 16,
                                                                                    self.offset_width,
-                                                                                   self.offset_height)
+                                                                                   self.offset_height,
+                                                                                   True)
             c: CellHolder
             c = self.tiles_holder[self.grid_select_y][self.grid_select_x]
             self.tiles[self.grid_select_y][self.grid_select_x] = Cell(c.x, c.y, c.sheet_x, c.sheet_y, c.size,
                                                                       self.cell_size / 16, c.offset_w, c.offset_h,
-                                                                      self.sprite_group, self.sprite_sheet)
+                                                                      self.sprite_group, self.sprite_sheet, c.movable)
 
         pygame.draw.rect(self.screen, [0, 0, 0], [self.selection[0], self.selection[1], 16, 16], 1)
+
+        if self.left_pressed and pygame.mouse.get_pos()[0] < self.window_size[0]:
+            current_value = self.tiles_holder[self.grid_select_y][self.grid_select_x].movable
+            self.tiles_holder[self.grid_select_y][self.grid_select_x] = CellHolder(self.grid_select_x,
+                                                                                   self.grid_select_y,
+                                                                                   self.select_x,
+                                                                                   self.select_y,
+                                                                                   16, self.cell_size / 16,
+                                                                                   self.offset_width,
+                                                                                   self.offset_height,
+                                                                                   not current_value)
+
+        for x in range(self.tiles_holder.shape[0]):
+            for y in range(self.tiles_holder.shape[1]):
+                if not self.tiles_holder[x][y].movable:
+                    self.draw_cross(
+                        pygame.Rect((self.tiles_holder[x][y].x * self.cell_size + self.tiles_holder[x][y].offset_w,
+                                     self.tiles_holder[x][y].y * self.cell_size + self.tiles_holder[x][y].offset_h),
+                                    (self.cell_size, self.cell_size)))
 
         if pygame.mouse.get_pos()[0] < self.window_size[0]:
             pygame.draw.rect(self.screen, [0, 0, 0],
                              [self.grid_select_x * self.cell_size + self.offset_width,
-                             self.grid_select_y * self.cell_size + self.offset_height,
-                             self.cell_size,
-                             self.cell_size], 1)
+                              self.grid_select_y * self.cell_size + self.offset_height,
+                              self.cell_size,
+                              self.cell_size], 1)
 
         pygame.display.flip()
+
+    def draw_cross(self, rect: pygame.Rect):
+        pygame.draw.line(self.screen, (255, 0, 0), rect.bottomright, rect.topleft, 3)
+        pygame.draw.line(self.screen, (255, 0, 0), rect.bottomleft, rect.topright, 3)
 
     @staticmethod
     def close():
