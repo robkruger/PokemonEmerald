@@ -1,2 +1,2 @@
 # PokemonEmerald
-A Pokemon Emerald clone made with pygame
+A Pokemon Emerald clone made with pygame [WIP]
