@@ -53,6 +53,10 @@ class Animation(pygame.sprite.Sprite):
 
     def stop(self):
         self.playing = False
+        if self.current_frame == 1:
+            self.current_frame = 2
+        elif self.current_frame == 3:
+            self.current_frame = 0
 
     def play(self):
         self.playing = True
@@ -94,6 +98,9 @@ class Animation(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = self.x * 16 * self.scale + self.offset_w
         self.rect.y = self.y * 16 * self.scale + self.offset_h - int(self.cell_size / 2 + 0.5)
+
+    def reset(self):
+        self.current_frame = 0
 
     def move(self, offset: tuple):
         self.x += offset[0]

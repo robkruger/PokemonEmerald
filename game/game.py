@@ -46,7 +46,7 @@ class Game(object):
                 c: CellHolder
                 c = self.tiles_holder[x][y]
                 self.tiles[x][y] = Cell(c.x, c.y, c.sheet_x, c.sheet_y, 16, self.cell_size / 16, 22,
-                                        15, self.sprite_group, self.sprite_sheet, c.movable)
+                                        15, self.sprite_group, self.sprite_sheet, c.movable, c.event)
 
         self.walk_up = [(15, 0), (15, 23), (15, 0), (15, 45)]
         self.walk_left = [(30, 0), (30, 23), (30, 0), (30, 45)]
@@ -145,6 +145,7 @@ class Game(object):
             self.moving_up = False
             self.move_countdown = self.move_length
             self.player.set_pos((int(round(self.player.x)), int(round(self.player.y))))
+            print(self.tiles_holder[self.player.y][self.player.x].event.value)
             return
         elif self.move_countdown - self.delta_time < 0:
             self.player.move((0, (-1 * (1000 / self.move_length)) *
@@ -159,6 +160,7 @@ class Game(object):
             self.moving_down = False
             self.move_countdown = self.move_length
             self.player.set_pos((int(round(self.player.x)), int(round(self.player.y))))
+            print(self.tiles_holder[self.player.y][self.player.x].event.value)
             return
         elif self.move_countdown - self.delta_time < 0:
             self.player.move((0, (1 * (1000 / self.move_length)) *
@@ -173,6 +175,7 @@ class Game(object):
             self.moving_left = False
             self.move_countdown = self.move_length
             self.player.set_pos((int(round(self.player.x)), int(round(self.player.y))))
+            print(self.tiles_holder[self.player.y][self.player.x].event.value)
             return
         elif self.move_countdown - self.delta_time < 0:
             self.player.move(((-1 * (1000 / self.move_length)) *
@@ -187,6 +190,7 @@ class Game(object):
             self.moving_right = False
             self.move_countdown = self.move_length
             self.player.set_pos((int(round(self.player.x)), int(round(self.player.y))))
+            print(self.tiles_holder[self.player.y][self.player.x].event.value)
             return
         elif self.move_countdown - self.delta_time < 0:
             self.player.move(((1 * (1000 / self.move_length)) *

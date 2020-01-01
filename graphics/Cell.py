@@ -3,7 +3,7 @@ import pygame
 
 class Cell(pygame.sprite.Sprite):
 
-    def __init__(self, x, y, sheet_x, sheet_y, size, scale, offset_w, offset_h, group, sprite_sheet, movable):
+    def __init__(self, x, y, sheet_x, sheet_y, size, scale, offset_w, offset_h, group, sprite_sheet, movable, event):
         pygame.sprite.Sprite.__init__(self, group)
 
         rect = pygame.Rect((sheet_x * size, sheet_y * size, size, size))
@@ -14,6 +14,7 @@ class Cell(pygame.sprite.Sprite):
         self.rect.x = x * size * scale + offset_w
         self.rect.y = y * size * scale + offset_h
         self.movable = movable
+        self.event = event
 
     def kill(self):
         pygame.sprite.Sprite.kill(self)

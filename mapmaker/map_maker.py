@@ -1,6 +1,7 @@
 import pygame
 import numpy as np
 
+from game.Event import Event
 from graphics.Cell import Cell
 from graphics.CellHolder import CellHolder
 
@@ -49,10 +50,11 @@ class MapMaker(object):
         self.texture_tiles = np.zeros(int(texture_select_size[0] / 16) * int(window_size[1] / 16),
                                       dtype=object).reshape(int(texture_select_size[0] / 16), int(window_size[1] / 16))
         self.left_pressed = False
+        self.middle_pressed = False
         for x in range(self.grid_width):
             for y in range(self.grid_height):
                 self.tiles_holder[y][x] = (CellHolder(x, y, 1, 0, 16, self.cell_size / 16, self.offset_width,
-                                                      self.offset_height, True))
+                                                      self.offset_height, True, Event.NONE))
 
         # for tx in range(self.texture_tiles_holder.shape[0]):
         #     for ty in range(self.texture_tiles_holder.shape[1]):
@@ -63,7 +65,7 @@ class MapMaker(object):
                 c: CellHolder
                 c = self.tiles_holder[y][x]
                 self.tiles[y][x] = Cell(c.x, c.y, c.sheet_x, c.sheet_y, 16, self.cell_size / 16, c.offset_w,
-                                        c.offset_h, self.sprite_group, self.sprite_sheet, c.movable)
+                                        c.offset_h, self.sprite_group, self.sprite_sheet, c.movable, c.event)
 
         # for x in range(self.texture_tiles_holder.shape[0]):
         #     for y in range(self.texture_tiles_holder.shape[1]):
@@ -72,7 +74,14 @@ class MapMaker(object):
         #         self.texture_tiles[x][y] = Cell(c.x,  c.y, c.sheet_x, c.sheet_y, c.size, c.scale, c.offset_w,
         #                                         c.offset_h, self.sprite_select_group, self.sprite_sheet)
 
+        pygame.font.init()
+        self.font = pygame.font.SysFont('Comic Sans MS', 30)
+        self.frame_cooldown = 0
+        self.frames = 0
+        self.show_event = True
+
     def parse_events(self):
+        self.frames += 1
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.Running = False
@@ -81,6 +90,8 @@ class MapMaker(object):
                     self.load = True
                 else:
                     self.load = False
+                if pygame.key.get_mods() and pygame.KMOD_SHIFT:
+                    self.show_event = not self.show_event
             else:
                 self.load = False
 
@@ -91,6 +102,12 @@ class MapMaker(object):
             self.pressed = True
         else:
             self.pressed = False
+
+        if pygame.mouse.get_pressed()[1] and self.frame_cooldown + 40 < self.frames:
+            self.frame_cooldown = self.frames
+            self.middle_pressed = True
+        else:
+            self.middle_pressed = False
 
         if pygame.mouse.get_pressed()[2]:
             self.left_pressed = True
@@ -111,7 +128,7 @@ class MapMaker(object):
                     c: CellHolder
                     c = self.tiles_holder[x][y]
                     self.tiles[x][y] = Cell(c.x, c.y, c.sheet_x, c.sheet_y, c.size, self.cell_size / 16, c.offset_w,
-                                            c.offset_h, self.sprite_group, self.sprite_sheet, c.movable)
+                                            c.offset_h, self.sprite_group, self.sprite_sheet, c.movable, c.event)
 
         self.grid_select_x = int((pygame.mouse.get_pos()[0] - self.offset_width) / self.cell_size)
         self.grid_select_y = int((pygame.mouse.get_pos()[1] - self.offset_height) / self.cell_size)
@@ -151,25 +168,40 @@ class MapMaker(object):
                                                                                    16, self.cell_size / 16,
                                                                                    self.offset_width,
                                                                                    self.offset_height,
-                                                                                   True)
+                                                                                   True,
+                                                                                   Event.NONE)
             c: CellHolder
             c = self.tiles_holder[self.grid_select_y][self.grid_select_x]
             self.tiles[self.grid_select_y][self.grid_select_x] = Cell(c.x, c.y, c.sheet_x, c.sheet_y, c.size,
                                                                       self.cell_size / 16, c.offset_w, c.offset_h,
-                                                                      self.sprite_group, self.sprite_sheet, c.movable)
+                                                                      self.sprite_group, self.sprite_sheet, c.movable,
+                                                                      c.event)
 
         pygame.draw.rect(self.screen, [0, 0, 0], [self.selection[0], self.selection[1], 16, 16], 1)
 
         if self.left_pressed and pygame.mouse.get_pos()[0] < self.window_size[0]:
-            current_value = self.tiles_holder[self.grid_select_y][self.grid_select_x].movable
+            c = self.tiles_holder[self.grid_select_y][self.grid_select_x]
             self.tiles_holder[self.grid_select_y][self.grid_select_x] = CellHolder(self.grid_select_x,
                                                                                    self.grid_select_y,
-                                                                                   self.select_x,
-                                                                                   self.select_y,
+                                                                                   c.sheet_x,
+                                                                                   c.sheet_y,
                                                                                    16, self.cell_size / 16,
                                                                                    self.offset_width,
                                                                                    self.offset_height,
-                                                                                   not current_value)
+                                                                                   not c.movable,
+                                                                                   c.event)
+
+        if self.middle_pressed and pygame.mouse.get_pos()[0] < self.window_size[0]:
+            c = self.tiles_holder[self.grid_select_y][self.grid_select_x]
+            self.tiles_holder[self.grid_select_y][self.grid_select_x] = CellHolder(self.grid_select_x,
+                                                                                   self.grid_select_y,
+                                                                                   c.sheet_x,
+                                                                                   c.sheet_y,
+                                                                                   16, self.cell_size / 16,
+                                                                                   self.offset_width,
+                                                                                   self.offset_height,
+                                                                                   c.movable,
+                                                                                   Event((c.event.value + 1) % 4))
 
         for x in range(self.tiles_holder.shape[0]):
             for y in range(self.tiles_holder.shape[1]):
@@ -178,6 +210,13 @@ class MapMaker(object):
                         pygame.Rect((self.tiles_holder[x][y].x * self.cell_size + self.tiles_holder[x][y].offset_w,
                                      self.tiles_holder[x][y].y * self.cell_size + self.tiles_holder[x][y].offset_h),
                                     (self.cell_size, self.cell_size)))
+
+        if self.show_event:
+            for x in range(self.tiles_holder.shape[0]):
+                for y in range(self.tiles_holder.shape[1]):
+                    textsurface = self.font.render(str(self.tiles_holder[x][y].event.value), False, (0, 0, 0))
+                    self.screen.blit(textsurface, (y * self.cell_size + 22 + self.cell_size / 4,
+                                                   x * self.cell_size + 15 - self.cell_size / 8))
 
         if pygame.mouse.get_pos()[0] < self.window_size[0]:
             pygame.draw.rect(self.screen, [0, 0, 0],
