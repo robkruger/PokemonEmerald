@@ -214,7 +214,7 @@ class MapMaker(object):
         if self.show_event:
             for x in range(self.tiles_holder.shape[0]):
                 for y in range(self.tiles_holder.shape[1]):
-                    textsurface = self.font.render(str(self.tiles_holder[x][y].event.value), False, (0, 0, 0))
+                    textsurface = self.font.render(str(self.tiles_holder[x][y].event.value), False, (255, 255, 255))
                     self.screen.blit(textsurface, (y * self.cell_size + 22 + self.cell_size / 4,
                                                    x * self.cell_size + 15 - self.cell_size / 8))
 
