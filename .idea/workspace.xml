@@ -2,15 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d5030e7c-1441-4146-bfc3-2507605e614f" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/data.npy.npz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data.npz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mapmaker/pygame_textinput.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/game/BattleType.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/game/battle.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data.npy" beforeDir="false" afterPath="$PROJECT_DIR$/data.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/Event.py" beforeDir="false" afterPath="$PROJECT_DIR$/game/Event.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/game/game.py" beforeDir="false" afterPath="$PROJECT_DIR$/game/game.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mapmaker/map_maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/mapmaker/map_maker.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />

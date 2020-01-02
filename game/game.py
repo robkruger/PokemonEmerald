@@ -1,7 +1,9 @@
 import numpy as np
 import pygame
 
+from game.BattleType import BattleType
 from game.Event import Event
+from game.battle import Battle
 from graphics.Animation import Animation
 from graphics.CellHolder import CellHolder
 from graphics.Cell import Cell
@@ -12,8 +14,10 @@ class Game(object):
     def __init__(self, map_path, window_size: tuple):
         pygame.init()
         self.screen = pygame.display.set_mode((window_size[0], window_size[1]))
+        self.window_size = window_size
         self.map = map_path
         self.Running = True
+        self.Battling = False
         self.tiles_holder: np.array
         np_load_old = np.load
         np.load = lambda *a, **k: np_load_old(*a, allow_pickle=True, **k)
@@ -67,6 +71,7 @@ class Game(object):
         self.player.add_frames_down(self.walk_down)
         self.set_repeat(True, 0, 1)
         self.anim_count = 0
+        self.battle = None
 
     def parse_events(self):
         self.clock.tick()
@@ -215,6 +220,8 @@ class Game(object):
             for p in self.pokemon_strings:
                 if np.random.randint(1, (1000 / int(p[1]))) == 1:
                     print("Wild Pokemon! ", p[0], (1000 / int(p[1])), int(p[1]))
+                    self.Battling = True
+                    self.battle = Battle(BattleType.WILD, self.window_size)
         elif event == Event.NPC:
             # TODO
             # Start battle with npc trainer
@@ -223,6 +230,14 @@ class Game(object):
             # TODO
             # Enter door and go inside
             return
+
+    def parse_battle(self):
+        if self.battle.Battling is True:
+            self.battle.parse_events()
+            self.battle.draw()
+        else:
+            self.battle = None
+            self.Battling = False
 
     def set_repeat(self, enabled=True, interval=0, delay=0):
         if enabled:

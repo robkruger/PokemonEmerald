@@ -12,8 +12,11 @@ from mapmaker.map_maker import MapMaker
 g = Game('data.npz', (600, 400))
 
 while g.Running:
-    g.parse_events()
-    g.draw()
+    if not g.Battling:
+        g.parse_events()
+        g.draw()
+    else:
+        g.parse_battle()
 
 g.close()
 
