@@ -4,6 +4,7 @@ import numpy as np
 from game.Event import Event
 from graphics.Cell import Cell
 from graphics.CellHolder import CellHolder
+from mapmaker.pygame_textinput import TextInput
 
 
 def key_is_down(key):
@@ -75,14 +76,18 @@ class MapMaker(object):
         #                                         c.offset_h, self.sprite_select_group, self.sprite_sheet)
 
         pygame.font.init()
-        self.font = pygame.font.SysFont('Comic Sans MS', 30)
+        self.font = pygame.font.SysFont(pygame.font.get_default_font(), 35)
         self.frame_cooldown = 0
         self.frames = 0
         self.show_event = True
+        self.show_sheet = True
+        self.text_input = TextInput()
+        self.pokemon_strings = []
 
     def parse_events(self):
         self.frames += 1
-        for event in pygame.event.get():
+        events = pygame.event.get()
+        for event in events:
             if event.type == pygame.QUIT:
                 self.Running = False
             if event.type == pygame.KEYDOWN:
@@ -92,8 +97,19 @@ class MapMaker(object):
                     self.load = False
                 if pygame.key.get_mods() and pygame.KMOD_SHIFT:
                     self.show_event = not self.show_event
+                if event.key == pygame.K_LCTRL:
+                    self.show_sheet = not self.show_sheet
+                if event.key == pygame.K_RETURN and not self.show_sheet:
+                    self.pokemon_strings = np.append(self.pokemon_strings, str.split(self.text_input.get_text()))
+                    self.text_input.clear_text()
+                if event.key == pygame.K_DELETE and not self.show_sheet:
+                    self.pokemon_strings = np.delete(self.pokemon_strings, len(self.pokemon_strings) - 1)
+                    self.pokemon_strings = np.delete(self.pokemon_strings, len(self.pokemon_strings) - 1)
             else:
                 self.load = False
+
+        self.text_input.update(events)
+
 
     def draw(self):
         self.screen.fill((255, 255, 255))
@@ -114,14 +130,16 @@ class MapMaker(object):
         else:
             self.left_pressed = False
 
-        if key_is_down(pygame.K_SPACE):
-            np.save('data.npy', self.tiles_holder)
-            # self.Running = False
+        if key_is_down(pygame.K_ESCAPE):
+            np.savez('data', self.tiles_holder, self.pokemon_strings)
+            self.Running = False
 
         if self.load:
             np_load_old = np.load
             np.load = lambda *a, **k: np_load_old(*a, allow_pickle=True, **k)
-            self.tiles_holder = np.load('data.npy')
+            npzfile = np.load('data.npz')
+            self.tiles_holder = npzfile['arr_0']
+            self.pokemon_strings = npzfile['arr_1']
             np.load = np_load_old
             for x in range(self.tiles_holder.shape[0]):
                 for y in range(self.tiles_holder.shape[1]):
@@ -147,13 +165,12 @@ class MapMaker(object):
                                  [x * self.cell_size + self.offset_width, y * self.cell_size + self.offset_height,
                                   self.cell_size, self.cell_size], 1)
 
-        self.screen.blit(self.sprite_sheet, self.sprite_sheet_rect)
         self.sprite_group.draw(self.screen)
 
         # print([(self.selection[0] - self.window_size[0]) / 16, self.selection[1] / 16,
         #        self.cell_size, self.cell_size])
 
-        if self.pressed and pygame.mouse.get_pos()[0] > self.window_size[0]:
+        if self.pressed and pygame.mouse.get_pos()[0] > self.window_size[0] and self.show_sheet:
             self.select_x = int((pygame.mouse.get_pos()[0] - self.window_size[0]) / 16)
             self.select_y = int(pygame.mouse.get_pos()[1] / 16)
             self.selection = (int((pygame.mouse.get_pos()[0]) / 16) * 16 + 8,
@@ -177,7 +194,8 @@ class MapMaker(object):
                                                                       self.sprite_group, self.sprite_sheet, c.movable,
                                                                       c.event)
 
-        pygame.draw.rect(self.screen, [0, 0, 0], [self.selection[0], self.selection[1], 16, 16], 1)
+        if self.show_sheet:
+            pygame.draw.rect(self.screen, [0, 0, 0], [self.selection[0], self.selection[1], 16, 16], 1)
 
         if self.left_pressed and pygame.mouse.get_pos()[0] < self.window_size[0]:
             c = self.tiles_holder[self.grid_select_y][self.grid_select_x]
@@ -214,7 +232,7 @@ class MapMaker(object):
         if self.show_event:
             for x in range(self.tiles_holder.shape[0]):
                 for y in range(self.tiles_holder.shape[1]):
-                    textsurface = self.font.render(str(self.tiles_holder[x][y].event.value), False, (255, 255, 255))
+                    textsurface = self.font.render(str(self.tiles_holder[x][y].event.value), True, (255, 255, 255))
                     self.screen.blit(textsurface, (y * self.cell_size + 22 + self.cell_size / 4,
                                                    x * self.cell_size + 15 - self.cell_size / 8))
 
@@ -224,6 +242,21 @@ class MapMaker(object):
                               self.grid_select_y * self.cell_size + self.offset_height,
                               self.cell_size,
                               self.cell_size], 1)
+
+        if self.show_sheet:
+            self.screen.blit(self.sprite_sheet, self.sprite_sheet_rect)
+        else:
+            textsurface = self.font.render("Pokédex ID + Probability Percentage", True, (0, 0, 0))
+            self.screen.blit(textsurface, (self.window_size[0], 0))
+            i = 1
+            for x in range(len(self.pokemon_strings)):
+                if x % 2 == 1:
+                    continue
+                textsurface = self.font.render(str(self.pokemon_strings[x] + " " + self.pokemon_strings[x + 1]),
+                                               True, (0, 0, 0))
+                self.screen.blit(textsurface, (self.window_size[0], i * 30))
+                i += 1
+            self.screen.blit(self.text_input.get_surface(), (self.window_size[0], 30 * i))
 
         pygame.display.flip()
 

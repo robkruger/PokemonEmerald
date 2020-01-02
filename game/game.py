@@ -1,6 +1,7 @@
 import numpy as np
 import pygame
 
+from game.Event import Event
 from graphics.Animation import Animation
 from graphics.CellHolder import CellHolder
 from graphics.Cell import Cell
@@ -16,9 +17,15 @@ class Game(object):
         self.tiles_holder: np.array
         np_load_old = np.load
         np.load = lambda *a, **k: np_load_old(*a, allow_pickle=True, **k)
-        self.tiles_holder = np.load(map_path)
+        npzfile = np.load(map_path)
+        self.tiles_holder = npzfile['arr_0']
+        pokemon_strings_np = npzfile['arr_1']
         np.load = np_load_old
-        print(self.tiles_holder.shape)
+        self.pokemon_strings = []
+        for x in range(len(pokemon_strings_np)):
+            if x % 2 == 1:
+                continue
+            self.pokemon_strings.append((pokemon_strings_np[x], pokemon_strings_np[x + 1]))
         self.tiles = np.zeros(self.tiles_holder.shape, dtype=object)
         self.sprite_group = pygame.sprite.Group()
         self.player_group = pygame.sprite.Group()
@@ -145,7 +152,7 @@ class Game(object):
             self.moving_up = False
             self.move_countdown = self.move_length
             self.player.set_pos((int(round(self.player.x)), int(round(self.player.y))))
-            print(self.tiles_holder[self.player.y][self.player.x].event.value)
+            self.event_handling(self.tiles_holder[self.player.y][self.player.x].event)
             return
         elif self.move_countdown - self.delta_time < 0:
             self.player.move((0, (-1 * (1000 / self.move_length)) *
@@ -160,7 +167,7 @@ class Game(object):
             self.moving_down = False
             self.move_countdown = self.move_length
             self.player.set_pos((int(round(self.player.x)), int(round(self.player.y))))
-            print(self.tiles_holder[self.player.y][self.player.x].event.value)
+            self.event_handling(self.tiles_holder[self.player.y][self.player.x].event)
             return
         elif self.move_countdown - self.delta_time < 0:
             self.player.move((0, (1 * (1000 / self.move_length)) *
@@ -175,7 +182,7 @@ class Game(object):
             self.moving_left = False
             self.move_countdown = self.move_length
             self.player.set_pos((int(round(self.player.x)), int(round(self.player.y))))
-            print(self.tiles_holder[self.player.y][self.player.x].event.value)
+            self.event_handling(self.tiles_holder[self.player.y][self.player.x].event)
             return
         elif self.move_countdown - self.delta_time < 0:
             self.player.move(((-1 * (1000 / self.move_length)) *
@@ -190,7 +197,7 @@ class Game(object):
             self.moving_right = False
             self.move_countdown = self.move_length
             self.player.set_pos((int(round(self.player.x)), int(round(self.player.y))))
-            print(self.tiles_holder[self.player.y][self.player.x].event.value)
+            self.event_handling(self.tiles_holder[self.player.y][self.player.x].event)
             return
         elif self.move_countdown - self.delta_time < 0:
             self.player.move(((1 * (1000 / self.move_length)) *
@@ -199,6 +206,23 @@ class Game(object):
             return
         self.player.move(((1 * (1000 / self.move_length)) * (self.delta_time / 1000), 0))
         self.move_countdown -= self.delta_time
+
+    def event_handling(self, event):
+        if event == Event.NONE:
+            # Nothing
+            return
+        elif event == Event.GRASS:
+            for p in self.pokemon_strings:
+                if np.random.randint(1, (1000 / int(p[1]))) == 1:
+                    print("Wild Pokemon! ", p[0], (1000 / int(p[1])), int(p[1]))
+        elif event == Event.NPC:
+            # TODO
+            # Start battle with npc trainer
+            return
+        elif event == Event.DOOR:
+            # TODO
+            # Enter door and go inside
+            return
 
     def set_repeat(self, enabled=True, interval=0, delay=0):
         if enabled:
