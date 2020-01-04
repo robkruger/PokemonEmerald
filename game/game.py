@@ -4,10 +4,9 @@ import pygame
 from game.BattleType import BattleType
 from game.Event import Event
 from game.battle import Battle
-from graphics.Animation import Animation
-from graphics.CellHolder import CellHolder
-from graphics.Cell import Cell
 from graphics.Player import Player
+from graphics.Cell import Cell
+from graphics.CellHolder import CellHolder
 
 
 class Game(object):
@@ -65,7 +64,8 @@ class Game(object):
         # self.run_up = [(15, 66), (15, 88), (15, 110)]
         # self.player = Player(0, 0, 15, 0, (14, 21), self.cell_size / 16, 22, 15, self.cell_size, self.player_group,
         #                      self.player_sheet)
-        self.player = Animation(150, True, 0, 0, (14, 21), self.cell_size / 16, self.cell_size, 22, 15, self.player_sheet, self.player_group)
+        self.player = Player(150, True, 0, 0, (14, 21), self.cell_size / 16, self.cell_size, 22, 15,
+                             self.player_sheet, self.player_group)
         self.player.add_frames_up(self.walk_up)
         self.player.add_frames_left(self.walk_left)
         self.player.add_frames_down(self.walk_down)
@@ -221,7 +221,7 @@ class Game(object):
                 if np.random.randint(1, (1000 / int(p[1]))) == 1:
                     print("Wild Pokemon! ", p[0], (1000 / int(p[1])), int(p[1]))
                     self.Battling = True
-                    self.battle = Battle(BattleType.WILD, self.window_size)
+                    self.battle = Battle(BattleType.WILD, self.window_size, self)
         elif event == Event.NPC:
             # TODO
             # Start battle with npc trainer
@@ -232,9 +232,11 @@ class Game(object):
             return
 
     def parse_battle(self):
+        self.clock.tick()
+        self.delta_time = self.clock.get_time()
         if self.battle.Battling is True:
-            self.battle.parse_events()
-            self.battle.draw()
+            self.battle.parse_events(self.delta_time)
+            self.battle.draw(self.delta_time)
         else:
             self.battle = None
             self.Battling = False

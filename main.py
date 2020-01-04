@@ -1,3 +1,5 @@
+from game.BattleType import BattleType
+from game.battle import Battle
 from game.game import Game
 from mapmaker.map_maker import MapMaker
 
@@ -10,6 +12,8 @@ from mapmaker.map_maker import MapMaker
 # m.close()
 
 g = Game('data.npz', (600, 400))
+g.Battling = True
+g.battle = Battle(BattleType.WILD, (600, 400), g)
 
 while g.Running:
     if not g.Battling:

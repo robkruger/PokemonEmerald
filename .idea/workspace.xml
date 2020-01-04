@@ -2,10 +2,21 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d5030e7c-1441-4146-bfc3-2507605e614f" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/game/BattleType.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/game/battle.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/Pokemon/1.gif" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/UI/Arena.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/UI/Battle_1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/UI/Battle_2.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/UI/Battle_3.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/UI/Battle_4.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/UI/EnemyBox.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/UI/FriendlyBox.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graphics/GIFImage.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data.npz" beforeDir="false" afterPath="$PROJECT_DIR$/data.npz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/game/battle.py" beforeDir="false" afterPath="$PROJECT_DIR$/game/battle.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/game/game.py" beforeDir="false" afterPath="$PROJECT_DIR$/game/game.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/Animation.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphics/Player.py" beforeDir="false" afterPath="$PROJECT_DIR$/graphics/Player.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
