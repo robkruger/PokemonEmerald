@@ -108,11 +108,15 @@ class GIFImage(object):
                 if self.reversed:
                     self.cur -= 1
                     if self.cur < self.startpoint:
-                        self.cur = self.breakpoint
+                        self.cur += 1
+                        self.pause()
+                        return
                 else:
                     self.cur += 1
                     if self.cur > self.breakpoint:
-                        self.cur = self.startpoint
+                        self.cur -= 1
+                        self.pause()
+                        return
 
                 self.ptime = time.time()
 

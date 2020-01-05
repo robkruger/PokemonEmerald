@@ -1,4 +1,4 @@
-#!C:\Users\robkr\PycharmProjects\Pokemon\venv\Scripts\python.exe
+#!C:\Users\User\PokemonEmerald\venv\Scripts\python.exe
 # EASY-INSTALL-ENTRY-SCRIPT: 'pip==19.0.3','console_scripts','pip3.7'
 __requires__ = 'pip==19.0.3'
 import re

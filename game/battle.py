@@ -20,7 +20,13 @@ class Battle(object):
         self.decide_box = pygame.transform.scale(self.decide_box,
                                                  (int((window_size[0] / 240) * self.decide_box.get_rect().size[0]),
                                                   int((window_size[1] / 160) * self.decide_box.get_rect().size[1])))
-        self.pokemon1 = GIFImage('assets/Pokemon/1.gif', window_size)
+        self.pokemon_encounter = GIFImage('assets/Pokemon/1.gif', window_size)
+        self.friendly_pokemon = pygame.image.load('assets/Pokemon/Back/1.png').convert_alpha()
+        self.friendly_pokemon = pygame.transform.scale(self.friendly_pokemon,
+                                                       (int((window_size[0] / 240) *
+                                                            self.friendly_pokemon.get_rect().size[0]),
+                                                        int((window_size[1] / 160) *
+                                                            self.friendly_pokemon.get_rect().size[1])))
         self.window_size = window_size
 
     def parse_events(self, delta):
@@ -35,7 +41,9 @@ class Battle(object):
 
         self.screen.blit(self.arena, (0, 0))
         self.screen.blit(self.decide_box, (0, self.arena.get_rect().size[1]))
-        self.pokemon1.render(self.screen, (int(375 * (self.window_size[0] / 600)),
-                                           int(65 * (self.window_size[1] / 400))))
+        self.pokemon_encounter.render(self.screen, (int(375 * (self.window_size[0] / 600)),
+                                                    int(65 * (self.window_size[1] / 400))))
+        self.screen.blit(self.friendly_pokemon, (int(70 * (self.window_size[0] / 600)),
+                                                 int(160 * (self.window_size[1] / 400))))
 
         pygame.display.flip()

@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\robkr\PycharmProjects\Pokemon\venv"
+VIRTUAL_ENV="C:\Users\User\PokemonEmerald\venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
