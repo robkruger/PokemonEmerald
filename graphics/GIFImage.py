@@ -13,6 +13,8 @@ class GIFImage(object):
         self.frames = []
         self.get_frames(window_size)
 
+        del self.frames[-1]
+
         self.cur = 0
         self.ptime = time.time()
 
