@@ -11,7 +11,7 @@ class Battle(object):
         self.type = battle_type
         self.Battling = True
         pygame.font.init()
-        self.font = pygame.font.SysFont(pygame.font.get_default_font(), 35)
+        self.font = pygame.font.Font('assets/font/pokemon-emerald-pro.ttf', 50)
         self.game = game
         self.frames = 0
         self.arena = pygame.image.load('assets/UI/Arena.png').convert_alpha()
@@ -46,31 +46,30 @@ class Battle(object):
 
     def parse_events(self, delta):
         self.frames += 1
-        print(self.selection)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.Battling = False
                 self.game.Running = False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
-                    if self.selection is 2:
+                    if self.selection == 2:
                         self.selection = 0
-                    elif self.selection is 3:
+                    elif self.selection == 3:
                         self.selection = 1
                 elif event.key == pygame.K_RIGHT:
-                    if self.selection is 0:
+                    if self.selection == 0:
                         self.selection = 2
-                    elif self.selection is 1:
+                    elif self.selection == 1:
                         self.selection = 3
                 elif event.key == pygame.K_UP:
-                    if self.selection is 1:
+                    if self.selection == 1:
                         self.selection = 0
-                    elif self.selection is 3:
+                    elif self.selection == 3:
                         self.selection = 2
                 elif event.key == pygame.K_DOWN:
-                    if self.selection is 0:
+                    if self.selection == 0:
                         self.selection = 1
-                    elif self.selection is 2:
+                    elif self.selection == 2:
                         self.selection = 3
 
     def draw(self, delta):
@@ -78,13 +77,13 @@ class Battle(object):
 
         self.screen.blit(self.arena, (0, 0))
         if self.state is BattleState.WAITING:
-            if self.selection is 0:
+            if self.selection == 0:
                 self.screen.blit(self.decide_box_1, (0, self.arena.get_rect().size[1]))
-            elif self.selection is 1:
+            elif self.selection == 1:
                 self.screen.blit(self.decide_box_2, (0, self.arena.get_rect().size[1]))
-            elif self.selection is 2:
+            elif self.selection == 2:
                 self.screen.blit(self.decide_box_3, (0, self.arena.get_rect().size[1]))
-            elif self.selection is 3:
+            elif self.selection == 3:
                 self.screen.blit(self.decide_box_4, (0, self.arena.get_rect().size[1]))
         elif self.state is BattleState.FRIENDLY_TURN or self.state is BattleState.ENEMY_TURN:
             self.screen.blit(self.turn_text_box, (0, self.arena.get_rect().size[1]))
@@ -94,6 +93,9 @@ class Battle(object):
                                                         * (self.window_size[1] / 400))))
         self.screen.blit(self.friendly_pokemon, (int(70 * (self.window_size[0] / 600)),
                                                  int(160 * (self.window_size[1] / 400))))
+
+        textsurface = self.font.render("Test", True, (255, 255, 255))
+        self.screen.blit(textsurface, (30, 290))
 
         pygame.display.flip()
 
