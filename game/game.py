@@ -235,8 +235,8 @@ class Game(object):
         self.clock.tick()
         self.delta_time = self.clock.get_time()
         if self.battle.Battling is True:
-            self.battle.parse_events(self.delta_time)
-            self.battle.draw(self.delta_time)
+            self.battle.parse_events(pygame.time.get_ticks())
+            self.battle.draw(pygame.time.get_ticks())
         else:
             self.battle = None
             self.Battling = False
