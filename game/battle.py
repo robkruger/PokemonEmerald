@@ -106,6 +106,7 @@ class Battle(object):
 
         if delta % 35 == 0:
             self.addText()
+            pygame.time.wait(1)
 
         self.drawText(self.text, (255, 255, 255), pygame.Rect(30, 295, 250, 300), self.font)
 
