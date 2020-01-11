@@ -38,6 +38,7 @@ class Battle(object):
         self.decide_box_2 = pygame.transform.scale(self.decide_box_2, self.decide_box_scale)
         self.decide_box_3 = pygame.transform.scale(self.decide_box_3, self.decide_box_scale)
         self.decide_box_4 = pygame.transform.scale(self.decide_box_4, self.decide_box_scale)
+        self.move_box = pygame.transform.scale(self.turn_text_box, self.turn_box_scale)
         self.turn_text_box = pygame.transform.scale(self.turn_text_box, self.turn_box_scale)
         self.arena = pygame.transform.scale(self.arena, self.arena_scale)
         self.window_size = window_size
@@ -47,9 +48,13 @@ class Battle(object):
         self.totalText = []
         self.text = ''
         self.set_repeat(True, 1, 0)
+        self.friendly_offset = 0
+        self.last_offset = 0
+        self.last_text = 0
 
     def parse_events(self, ticks):
         self.frames += 1
+        enter_pressed = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.Battling = False
@@ -75,6 +80,8 @@ class Battle(object):
                         self.selection = 1
                     elif self.selection == 2:
                         self.selection = 3
+                elif event.key == pygame.K_RETURN:
+                    enter_pressed = True
 
         if len(self.totalText) == 0 and self.state is BattleState.START:
             text = "A wild Pokémon appeared!"
@@ -82,10 +89,26 @@ class Battle(object):
             for c in text:
                 self.totalText.append(c)
 
+        if len(self.currentText) == len(self.totalText) and self.state is BattleState.START and enter_pressed:
+            self.state = BattleState.WAITING
+            text = "What will (Friendly Pokémon) do?"
+            self.totalText = []
+            self.currentText = []
+            self.text = ''
+            for c in text:
+                self.totalText.append(c)
+
     def draw(self, delta):
         self.screen.fill((255, 255, 255))
 
         self.screen.blit(self.arena, (0, 0))
+        self.pokemon_encounter.render(self.screen,
+                                      (int((430 - self.pokemon_encounter.get_width() * self.enemy_scale[0] / 2)
+                                           * (self.window_size[0] / 600)),
+                                       int((160 - self.pokemon_encounter.get_height() * self.enemy_scale[1])
+                                           * (self.window_size[1] / 400))))
+        self.screen.blit(self.friendly_pokemon, (int(70 * (self.window_size[0] / 600)),
+                                                 int((161 + self.friendly_offset) * (self.window_size[1] / 400))))
         if self.state is BattleState.WAITING or BattleState.START:
             if self.selection == 0:
                 self.screen.blit(self.decide_box_1, (0, self.arena.get_rect().size[1]))
@@ -97,16 +120,16 @@ class Battle(object):
                 self.screen.blit(self.decide_box_4, (0, self.arena.get_rect().size[1]))
         elif self.state is BattleState.FRIENDLY_TURN or self.state is BattleState.ENEMY_TURN:
             self.screen.blit(self.turn_text_box, (0, self.arena.get_rect().size[1]))
-        self.pokemon_encounter.render(self.screen, (int((430 - self.pokemon_encounter.get_width() * self.enemy_scale[0] / 2)
-                                                        * (self.window_size[0] / 600)),
-                                                    int((160 - self.pokemon_encounter.get_height() * self.enemy_scale[1])
-                                                        * (self.window_size[1] / 400))))
-        self.screen.blit(self.friendly_pokemon, (int(70 * (self.window_size[0] / 600)),
-                                                 int(160 * (self.window_size[1] / 400))))
 
-        if delta % 35 == 0:
+        if delta - self.last_text >= 35:
             self.addText()
-            pygame.time.wait(1)
+            self.last_text = delta
+
+        if 500 <= delta - self.last_offset < 1000 and self.state is BattleState.WAITING:
+            self.friendly_offset = -1
+        elif delta - self.last_offset >= 1000 and self.state is BattleState.WAITING:
+            self.friendly_offset = 0
+            self.last_offset = delta
 
         self.drawText(self.text, (255, 255, 255), pygame.Rect(30, 295, 250, 300), self.font)
 
