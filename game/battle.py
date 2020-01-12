@@ -10,6 +10,7 @@ from logics.Pokemon import Pokemon
 
 class Battle(object):
     def __init__(self, battle_type: BattleType, window_size: tuple, game, enemy_id):
+        pygame.display.set_caption('Battle!')
         self.screen = pygame.display.set_mode((window_size[0], window_size[1]))
         self.type = battle_type
         self.Battling = True
@@ -18,38 +19,48 @@ class Battle(object):
         self.game = game
         self.frames = 0
         self.arena = pygame.image.load('assets/UI/Arena.png').convert_alpha()
-        self.decide_box_1 = pygame.image.load('assets/UI/Battle_1.png').convert_alpha()
-        self.decide_box_2 = pygame.image.load('assets/UI/Battle_2.png').convert_alpha()
-        self.decide_box_3 = pygame.image.load('assets/UI/Battle_3.png').convert_alpha()
-        self.decide_box_4 = pygame.image.load('assets/UI/Battle_4.png').convert_alpha()
-        self.move_box1 = pygame.image.load('assets/UI/Move_1.png').convert_alpha()
-        self.move_box2 = pygame.image.load('assets/UI/Move_2.png').convert_alpha()
-        self.move_box3 = pygame.image.load('assets/UI/Move_3.png').convert_alpha()
-        self.move_box4 = pygame.image.load('assets/UI/Move_4.png').convert_alpha()
-        self.turn_box = pygame.image.load('assets/UI/Turn.png').convert_alpha()
+        decide_box_1 = pygame.image.load('assets/UI/Battle_1.png').convert_alpha()
+        decide_box_2 = pygame.image.load('assets/UI/Battle_2.png').convert_alpha()
+        decide_box_3 = pygame.image.load('assets/UI/Battle_3.png').convert_alpha()
+        decide_box_4 = pygame.image.load('assets/UI/Battle_4.png').convert_alpha()
+        move_box1 = pygame.image.load('assets/UI/Move_1.png').convert_alpha()
+        move_box2 = pygame.image.load('assets/UI/Move_2.png').convert_alpha()
+        move_box3 = pygame.image.load('assets/UI/Move_3.png').convert_alpha()
+        move_box4 = pygame.image.load('assets/UI/Move_4.png').convert_alpha()
+        turn_box = pygame.image.load('assets/UI/Turn.png').convert_alpha()
         self.pokemon_encounter = GIFImage('assets/Pokemon/Front/' + str(enemy_id) + '.gif', window_size)
         self.friendly_pokemon = pygame.image.load('assets/Pokemon/Back/1.png').convert_alpha()
         self.arena_scale = (int((window_size[0] / 240) * self.arena.get_rect().size[0]),
                             int((window_size[1] / 160) * self.arena.get_rect().size[1]))
-        self.decide_box_scale = (int((window_size[0] / 240) * self.decide_box_1.get_rect().size[0]),
-                                 int((window_size[1] / 160) * self.decide_box_1.get_rect().size[1]))
-        self.move_box_scale = (int((window_size[0] / 240) * self.move_box1.get_rect().size[0]),
-                               int((window_size[1] / 160) * self.move_box1.get_rect().size[1]))
+        self.decide_box_scale = (int((window_size[0] / 240) * decide_box_1.get_rect().size[0]),
+                                 int((window_size[1] / 160) * decide_box_1.get_rect().size[1]))
+        self.move_box_scale = (int((window_size[0] / 240) * move_box1.get_rect().size[0]),
+                               int((window_size[1] / 160) * move_box1.get_rect().size[1]))
         self.enemy_scale = (int((window_size[0] / 240)),
                             int((window_size[1] / 160)))
         self.friendly_scale = (int((window_size[0] / 240) * self.friendly_pokemon.get_rect().size[0]),
                                int((window_size[1] / 160) * self.friendly_pokemon.get_rect().size[1]))
         self.friendly_pokemon = pygame.transform.scale(self.friendly_pokemon, self.friendly_scale)
-        self.decide_box_1 = pygame.transform.scale(self.decide_box_1, self.decide_box_scale)
-        self.decide_box_2 = pygame.transform.scale(self.decide_box_2, self.decide_box_scale)
-        self.decide_box_3 = pygame.transform.scale(self.decide_box_3, self.decide_box_scale)
-        self.decide_box_4 = pygame.transform.scale(self.decide_box_4, self.decide_box_scale)
-        self.move_box1 = pygame.transform.scale(self.move_box1, self.move_box_scale)
-        self.move_box2 = pygame.transform.scale(self.move_box2, self.move_box_scale)
-        self.move_box3 = pygame.transform.scale(self.move_box3, self.move_box_scale)
-        self.move_box4 = pygame.transform.scale(self.move_box4, self.move_box_scale)
-        self.turn_box = pygame.transform.scale(self.turn_box, self.move_box_scale)
+        decide_box_1 = pygame.transform.scale(decide_box_1, self.decide_box_scale)
+        decide_box_2 = pygame.transform.scale(decide_box_2, self.decide_box_scale)
+        decide_box_3 = pygame.transform.scale(decide_box_3, self.decide_box_scale)
+        decide_box_4 = pygame.transform.scale(decide_box_4, self.decide_box_scale)
+        move_box1 = pygame.transform.scale(move_box1, self.move_box_scale)
+        move_box2 = pygame.transform.scale(move_box2, self.move_box_scale)
+        move_box3 = pygame.transform.scale(move_box3, self.move_box_scale)
+        move_box4 = pygame.transform.scale(move_box4, self.move_box_scale)
+        turn_box = pygame.transform.scale(turn_box, self.move_box_scale)
         self.arena = pygame.transform.scale(self.arena, self.arena_scale)
+        self.all_boxes = []
+        self.all_boxes.append(decide_box_1)
+        self.all_boxes.append(decide_box_2)
+        self.all_boxes.append(decide_box_3)
+        self.all_boxes.append(decide_box_4)
+        self.all_boxes.append(move_box1)
+        self.all_boxes.append(move_box2)
+        self.all_boxes.append(move_box3)
+        self.all_boxes.append(move_box4)
+        self.all_boxes.append(turn_box)
         self.window_size = window_size
         self.state = BattleState.START
         self.selection = 0
@@ -145,25 +156,11 @@ class Battle(object):
                                            * (self.window_size[1] / 400))))
         self.screen.blit(self.friendly_pokemon, (int(70 * (self.window_size[0] / 600)),
                                                  int((161 + self.friendly_offset) * (self.window_size[1] / 400))))
+
         if self.state is BattleState.WAITING or BattleState.START:
-            if self.selection == 0:
-                self.screen.blit(self.decide_box_1, (0, self.arena.get_rect().size[1]))
-            elif self.selection == 1:
-                self.screen.blit(self.decide_box_2, (0, self.arena.get_rect().size[1]))
-            elif self.selection == 2:
-                self.screen.blit(self.decide_box_3, (0, self.arena.get_rect().size[1]))
-            elif self.selection == 3:
-                self.screen.blit(self.decide_box_4, (0, self.arena.get_rect().size[1]))
-            elif self.selection == 4:
-                self.screen.blit(self.move_box1, (0, self.arena.get_rect().size[1]))
-            elif self.selection == 5:
-                self.screen.blit(self.move_box2, (0, self.arena.get_rect().size[1]))
-            elif self.selection == 6:
-                self.screen.blit(self.move_box3, (0, self.arena.get_rect().size[1]))
-            elif self.selection == 7:
-                self.screen.blit(self.move_box4, (0, self.arena.get_rect().size[1]))
+            self.screen.blit(self.all_boxes[self.selection], (0, self.arena.get_rect().size[1]))
         elif self.state is BattleState.FRIENDLY_TURN or self.state is BattleState.ENEMY_TURN:
-            self.screen.blit(self.turn_box, (0, self.arena.get_rect().size[1]))
+            self.screen.blit(self.all_boxes[-1], (0, self.arena.get_rect().size[1]))
 
         if delta - self.last_text >= 35:
             self.addText()
@@ -195,33 +192,25 @@ class Battle(object):
 
         pygame.display.flip()
 
-    # draw some text into an area of a surface
-    # automatically wraps words
-    # returns any text that didn't get blitted
     def drawText(self, text, color, shadow_color, rect, font, aa=False, bkg=None):
         rect = pygame.Rect(rect)
         y = rect.top
         lineSpacing = -2
 
-        # get the height of the font
         fontHeight = font.size("Tg")[1]
 
         while text:
             i = 1
 
-            # determine if the row of text will be outside our area
             if y + fontHeight > rect.bottom:
                 break
 
-            # determine maximum width of line
             while font.size(text[:i])[0] < rect.width and i < len(text):
                 i += 1
 
-            # if we've wrapped the text, then adjust the wrap to the last word
             if i < len(text):
                 i = text.rfind(" ", 0, i) + 1
 
-            # render the line and blit it to the surface
             if bkg:
                 image = font.render(text[:i], 1, color, bkg)
                 shadow = font.render(text[:i], aa, shadow_color, bkg)
@@ -234,7 +223,6 @@ class Battle(object):
             self.screen.blit(image, (rect.left, y))
             y += fontHeight + lineSpacing
 
-            # remove the text we just blitted
             text = text[i:]
 
         return text

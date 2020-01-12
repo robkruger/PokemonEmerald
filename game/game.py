@@ -12,6 +12,9 @@ from graphics.CellHolder import CellHolder
 class Game(object):
     def __init__(self, map_path, window_size: tuple):
         pygame.init()
+        pygame.display.set_caption('Overworld')
+        icon = pygame.image.load('assets/logo.png')
+        pygame.display.set_icon(icon)
         self.screen = pygame.display.set_mode((window_size[0], window_size[1]))
         self.window_size = window_size
         self.map = map_path
@@ -240,6 +243,7 @@ class Game(object):
         else:
             self.battle = None
             self.Battling = False
+            pygame.display.set_caption('Overworld')
 
     def set_repeat(self, enabled=True, interval=0, delay=0):
         if enabled:
