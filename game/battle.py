@@ -7,6 +7,8 @@ from graphics.GIFImage import GIFImage
 from logics.Move import Move
 from logics.Pokemon import Pokemon
 
+from PIL import Image
+
 
 class Battle(object):
     def __init__(self, battle_type: BattleType, window_size: tuple, game, enemy_id):
@@ -28,6 +30,9 @@ class Battle(object):
         move_box3 = pygame.image.load('assets/UI/Move_3.png').convert_alpha()
         move_box4 = pygame.image.load('assets/UI/Move_4.png').convert_alpha()
         turn_box = pygame.image.load('assets/UI/Turn.png').convert_alpha()
+        friendly_box = pygame.image.load('assets/UI/FriendlyBox.png').convert_alpha()
+        enemy_box = pygame.image.load('assets/UI/EnemyBox.png').convert_alpha()
+        health_bar = pygame.image.load('assets/UI/health_bar.png').convert_alpha()
         self.pokemon_encounter = GIFImage('assets/Pokemon/Front/' + str(enemy_id) + '.gif', window_size)
         self.friendly_pokemon = pygame.image.load('assets/Pokemon/Back/1.png').convert_alpha()
         self.arena_scale = (int((window_size[0] / 240) * self.arena.get_rect().size[0]),
@@ -40,6 +45,12 @@ class Battle(object):
                             int((window_size[1] / 160)))
         self.friendly_scale = (int((window_size[0] / 240) * self.friendly_pokemon.get_rect().size[0]),
                                int((window_size[1] / 160) * self.friendly_pokemon.get_rect().size[1]))
+        self.friendly_box_scale = (int((window_size[0] / 240) * friendly_box.get_rect().size[0]),
+                                   int((window_size[1] / 160) * friendly_box.get_rect().size[1]))
+        self.enemy_box_scale = (int((window_size[0] / 240) * enemy_box.get_rect().size[0]),
+                                int((window_size[1] / 160) * enemy_box.get_rect().size[1]))
+        self.health_bar_scale = (int((window_size[0] / 240) * health_bar.get_rect().size[0]),
+                                 int((window_size[1] / 160) * health_bar.get_rect().size[1]))
         self.friendly_pokemon = pygame.transform.scale(self.friendly_pokemon, self.friendly_scale)
         decide_box_1 = pygame.transform.scale(decide_box_1, self.decide_box_scale)
         decide_box_2 = pygame.transform.scale(decide_box_2, self.decide_box_scale)
@@ -49,7 +60,10 @@ class Battle(object):
         move_box2 = pygame.transform.scale(move_box2, self.move_box_scale)
         move_box3 = pygame.transform.scale(move_box3, self.move_box_scale)
         move_box4 = pygame.transform.scale(move_box4, self.move_box_scale)
+        friendly_box = pygame.transform.scale(friendly_box, self.friendly_box_scale)
+        enemy_box = pygame.transform.scale(enemy_box, self.enemy_box_scale)
         turn_box = pygame.transform.scale(turn_box, self.move_box_scale)
+        health_bar = pygame.transform.scale(health_bar, self.health_bar_scale)
         self.arena = pygame.transform.scale(self.arena, self.arena_scale)
         self.all_boxes = []
         self.all_boxes.append(decide_box_1)
@@ -60,6 +74,9 @@ class Battle(object):
         self.all_boxes.append(move_box2)
         self.all_boxes.append(move_box3)
         self.all_boxes.append(move_box4)
+        self.all_boxes.append(health_bar)
+        self.all_boxes.append(friendly_box)
+        self.all_boxes.append(enemy_box)
         self.all_boxes.append(turn_box)
         self.window_size = window_size
         self.state = BattleState.START
@@ -72,7 +89,7 @@ class Battle(object):
         self.last_offset = 0
         self.last_text = 0
         self.f_pokemon = Pokemon("Bulbasaur", 1, [Move("TACKLE", "NORMAL", 20), Move("GROWL", "NORMAL", 30),
-                                                  Move("LEECH SEED", "GRASS", 40), Move("VINE WHIP", "GRASS", 5)])
+                                                  Move("LEECH SEED", "GRASS", 40), Move("VINE WHIP", "GRASS", 5)], 20)
 
     def parse_events(self, ticks):
         self.frames += 1
@@ -129,14 +146,27 @@ class Battle(object):
             self.totalText = []
             for c in text:
                 self.totalText.append(c)
-
-        if enter_pressed and self.state is BattleState.WAITING and self.selection == 0:
-            self.selection = 4
+        elif self.selection > 3 and self.state is BattleState.WAITING and enter_pressed:
+            self.state = BattleState.FRIENDLY_TURN
+            text = "(Friendly Pokémon) used " + str(self.f_pokemon.moves[self.selection - 4].name) + "!"
             self.totalText = []
             self.currentText = []
             self.text = ''
-
-        if len(self.currentText) == len(self.totalText) and self.state is BattleState.START and enter_pressed:
+            for c in text:
+                self.totalText.append(c)
+        elif enter_pressed and self.state is BattleState.WAITING and self.selection == 0:
+            self.selection = 4
+        elif len(self.currentText) == len(self.totalText) and self.state is BattleState.FRIENDLY_TURN and enter_pressed:
+            self.state = BattleState.ENEMY_TURN
+            text = "(Enemy Pokémon) used (move)!"
+            self.totalText = []
+            self.currentText = []
+            self.text = ''
+            for c in text:
+                self.totalText.append(c)
+        elif len(self.currentText) == len(self.totalText) and (self.state is BattleState.START or BattleState.ENEMY_TURN)\
+                and enter_pressed:
+            self.selection = 0
             self.state = BattleState.WAITING
             text = "What will (Friendly Pokémon) do?"
             self.totalText = []
@@ -157,10 +187,18 @@ class Battle(object):
         self.screen.blit(self.friendly_pokemon, (int(70 * (self.window_size[0] / 600)),
                                                  int((161 + self.friendly_offset) * (self.window_size[1] / 400))))
 
-        if self.state is BattleState.WAITING or BattleState.START:
-            self.screen.blit(self.all_boxes[self.selection], (0, self.arena.get_rect().size[1]))
-        elif self.state is BattleState.FRIENDLY_TURN or self.state is BattleState.ENEMY_TURN:
+        if self.state is BattleState.WAITING:
+            if self.selection < 4:
+                self.screen.blit(self.all_boxes[self.selection], (0, self.arena.get_rect().size[1]))
+                self.drawText(self.text, (255, 255, 255), (55, 55, 55), pygame.Rect(30, 295, 250, 300), self.font)
+            else:
+                self.screen.blit(self.all_boxes[self.selection], (0, self.arena.get_rect().size[1]))
+        elif self.state is BattleState.FRIENDLY_TURN or BattleState.ENEMY_TURN or BattleState.START:
             self.screen.blit(self.all_boxes[-1], (0, self.arena.get_rect().size[1]))
+            self.drawText(self.text, (255, 255, 255), (55, 55, 55), pygame.Rect(30, 295, 550, 300), self.font)
+
+        self.screen.blit(self.all_boxes[-3], (325 * (self.window_size[0] / 600), 185 * (self.window_size[1] / 400)))
+        self.screen.blit(self.all_boxes[-2], (30 * (self.window_size[0] / 600), 40 * (self.window_size[1] / 400)))
 
         if delta - self.last_text >= 35:
             self.addText()
@@ -172,9 +210,7 @@ class Battle(object):
             self.friendly_offset = 0
             self.last_offset = delta
 
-        self.drawText(self.text, (255, 255, 255), (55, 55, 55), pygame.Rect(30, 295, 250, 300), self.font)
-
-        if 3 < self.selection < 8:
+        if 3 < self.selection < 8 and self.state is BattleState.WAITING:
             self.drawText(self.f_pokemon.moves[0].name, (72, 72, 72), (208, 208, 200),
                           pygame.Rect(40, 23 + self.arena.get_rect().size[1], 300, 400), self.font)
             self.drawText(self.f_pokemon.moves[1].name, (72, 72, 72), (208, 208, 200),
@@ -190,9 +226,22 @@ class Battle(object):
             self.drawText("TYPE/" + str(self.f_pokemon.moves[self.selection - 4].type), (72, 72, 72), (208, 208, 200),
                           pygame.Rect(430, 62 + self.arena.get_rect().size[1], 300, 400), self.font)
 
+        temp_font = pygame.font.Font('assets/font/pokemon-emerald-pro.ttf', 28)
+        self.drawText(str(self.f_pokemon.current_hp), (66, 66, 66), (222, 214, 181),
+                      pygame.Rect(492, 238, 1000, 1000), temp_font)
+        self.drawText("/", (66, 66, 66), (222, 214, 181),
+                      pygame.Rect(514, 237, 1000, 1000), temp_font)
+        self.drawText(str(self.f_pokemon.max_hp), (66, 66, 66), (222, 214, 181), pygame.Rect(540, 238, 1000, 1000),
+                      temp_font)
+        self.drawText(str(self.f_pokemon.name), (66, 66, 66), (222, 214, 181), pygame.Rect(367, 195, 1000, 1000),
+                      temp_font)
+        self.drawText("Lv5", (66, 66, 66), (222, 214, 181), pygame.Rect(530, 195, 1000, 1000),
+                      temp_font)
+        self.screen.blit(self.all_boxes[-4], (445 * (self.window_size[0] / 600), 228 * (self.window_size[1] / 400)))
+
         pygame.display.flip()
 
-    def drawText(self, text, color, shadow_color, rect, font, aa=False, bkg=None):
+    def drawText(self, text, color, shadow_color, rect, font: pygame.font.Font, aa=False, bkg=None):
         rect = pygame.Rect(rect)
         y = rect.top
         lineSpacing = -2
@@ -219,7 +268,8 @@ class Battle(object):
                 image = font.render(text[:i], aa, color)
                 shadow = font.render(text[:i], aa, shadow_color)
 
-            self.screen.blit(shadow, (rect.left + 2, y + 2))
+            self.screen.blit(shadow, (rect.left + (self.window_size[0] / 240) * (fontHeight / 36),
+                                      y + (self.window_size[1] / 160) * (fontHeight / 36)))
             self.screen.blit(image, (rect.left, y))
             y += fontHeight + lineSpacing
 
