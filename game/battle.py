@@ -93,11 +93,11 @@ class Battle(object):
         self.f_pokemon = Pokemon("Bulbasaur", 1,
                                  [Move("TACKLE", "NORMAL", 20), Move("GROWL", "NORMAL", 30),
                                   Move("LEECH SEED", "GRASS", 40), Move("VINE WHIP", "GRASS", 5)],
-                                 5, 20, datastore[1]['base'])
+                                 5, datastore[1]['base'])
         self.e_pokemon = Pokemon(datastore[enemy_id - 1]['name']['english'], enemy_id,
                                  [Move("TACKLE", "NORMAL", 20), Move("GROWL", "NORMAL", 30),
                                   Move("LEECH SEED", "GRASS", 40), Move("VINE WHIP", "GRASS", 5)],
-                                 5, 20, datastore[enemy_id - 1]['base'])
+                                 5, datastore[enemy_id - 1]['base'])
         self.doneDamage = False
 
     def parse_events(self, ticks):
@@ -165,7 +165,7 @@ class Battle(object):
                 self.totalText.append(c)
         elif len(self.currentText) == len(self.totalText) and self.state is BattleState.FRIENDLY_TURN and enter_pressed:
             self.doneDamage = False
-            self.doDamage()
+            self.doDamage(self.f_pokemon, self.e_pokemon)
         elif len(self.currentText) == len(self.totalText) \
                 and self.state is BattleState.FRIENDLY_TURN and self.doneDamage:
             self.state = BattleState.ENEMY_TURN
@@ -264,7 +264,7 @@ class Battle(object):
         pygame.display.flip()
 
     def doDamage(self, user: Pokemon, target: Pokemon):
-        print("damagae")
+        print("damage")
         self.doneDamage = True
         # damage = math.floor(math.floor(math.floor(2 * target.level / 5 + 2) * ))
 
