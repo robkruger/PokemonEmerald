@@ -1,6 +1,7 @@
-import numpy
 import pygame
 import json
+import math
+import random
 
 from game.BattleType import BattleType
 from game.BattleState import BattleState
@@ -97,6 +98,7 @@ class Battle(object):
                                  [Move("TACKLE", "NORMAL", 20), Move("GROWL", "NORMAL", 30),
                                   Move("LEECH SEED", "GRASS", 40), Move("VINE WHIP", "GRASS", 5)],
                                  5, 20, datastore[enemy_id - 1]['base'])
+        self.doneDamage = False
 
     def parse_events(self, ticks):
         self.frames += 1
@@ -155,27 +157,31 @@ class Battle(object):
                 self.totalText.append(c)
         elif self.selection > 3 and self.state is BattleState.WAITING and enter_pressed:
             self.state = BattleState.FRIENDLY_TURN
-            text = "(Friendly Pokémon) used " + str(self.f_pokemon.moves[self.selection - 4].name) + "!"
+            text = self.f_pokemon.name + " used " + str(self.f_pokemon.moves[self.selection - 4].name) + "!"
             self.totalText = []
             self.currentText = []
             self.text = ''
             for c in text:
                 self.totalText.append(c)
-        elif enter_pressed and self.state is BattleState.WAITING and self.selection == 0:
-            self.selection = 4
         elif len(self.currentText) == len(self.totalText) and self.state is BattleState.FRIENDLY_TURN and enter_pressed:
+            self.doneDamage = False
+            self.doDamage()
+        elif len(self.currentText) == len(self.totalText) \
+                and self.state is BattleState.FRIENDLY_TURN and self.doneDamage:
             self.state = BattleState.ENEMY_TURN
-            text = "(Enemy Pokémon) used (move)!"
+            text = self.e_pokemon.name + " used " + random.choice(self.e_pokemon.moves).name + "!"
             self.totalText = []
             self.currentText = []
             self.text = ''
             for c in text:
                 self.totalText.append(c)
+        elif self.selection == 0 and enter_pressed:
+            self.selection = 4
         elif len(self.currentText) == len(self.totalText) and (self.state is BattleState.START or BattleState.ENEMY_TURN)\
                 and enter_pressed:
             self.selection = 0
             self.state = BattleState.WAITING
-            text = "What will (Friendly Pokémon) do?"
+            text = "What will " + self.f_pokemon.name + " do?"
             self.totalText = []
             self.currentText = []
             self.text = ''
@@ -256,6 +262,11 @@ class Battle(object):
         self.all_boxes[-4] = pygame.transform.scale(self.all_boxes[-4], health_bar_scale)
 
         pygame.display.flip()
+
+    def doDamage(self, user: Pokemon, target: Pokemon):
+        print("damagae")
+        self.doneDamage = True
+        # damage = math.floor(math.floor(math.floor(2 * target.level / 5 + 2) * ))
 
     def drawText(self, text, color, shadow_color, rect, font: pygame.font.Font, aa=False, bkg=None):
         rect = pygame.Rect(rect)

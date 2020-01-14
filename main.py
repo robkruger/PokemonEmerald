@@ -13,7 +13,7 @@ from mapmaker.map_maker import MapMaker
 
 g = Game('data.npz', (600, 400))
 g.Battling = True
-g.battle = Battle(BattleType.WILD, (600, 400), g, 1)
+g.battle = Battle(BattleType.WILD, (600, 400), g, 184)
 
 while g.Running:
     if not g.Battling:

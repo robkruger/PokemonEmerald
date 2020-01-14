@@ -224,7 +224,7 @@ class Game(object):
                 if np.random.randint(1, (1000 / int(p[1]))) == 1:
                     print("Wild Pokemon! ", p[0], (1000 / int(p[1])), int(p[1]))
                     self.Battling = True
-                    self.battle = Battle(BattleType.WILD, self.window_size, self, 300)
+                    self.battle = Battle(BattleType.WILD, self.window_size, self, int(p[0]))
         elif event == Event.NPC:
             # TODO
             # Start battle with npc trainer
