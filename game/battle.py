@@ -1,13 +1,12 @@
 import numpy
 import pygame
+import json
 
 from game.BattleType import BattleType
 from game.BattleState import BattleState
 from graphics.GIFImage import GIFImage
 from logics.Move import Move
 from logics.Pokemon import Pokemon
-
-from PIL import Image
 
 
 class Battle(object):
@@ -88,14 +87,16 @@ class Battle(object):
         self.friendly_offset = 0
         self.last_offset = 0
         self.last_text = 0
+        with open('assets/Pokemon/pokedex.json', encoding='utf-8') as f:
+            datastore = json.load(f)
         self.f_pokemon = Pokemon("Bulbasaur", 1,
                                  [Move("TACKLE", "NORMAL", 20), Move("GROWL", "NORMAL", 30),
                                   Move("LEECH SEED", "GRASS", 40), Move("VINE WHIP", "GRASS", 5)],
-                                 5, 20)
-        self.e_pokemon = Pokemon("Bulbasaur", enemy_id,
+                                 5, 20, datastore[1]['base'])
+        self.e_pokemon = Pokemon(datastore[enemy_id - 1]['name']['english'], enemy_id,
                                  [Move("TACKLE", "NORMAL", 20), Move("GROWL", "NORMAL", 30),
                                   Move("LEECH SEED", "GRASS", 40), Move("VINE WHIP", "GRASS", 5)],
-                                 5, 20)
+                                 5, 20, datastore[enemy_id - 1]['base'])
 
     def parse_events(self, ticks):
         self.frames += 1
@@ -250,9 +251,9 @@ class Battle(object):
                       temp_font)
         self.screen.blit(self.all_boxes[-4], (445 * (self.window_size[0] / 600), 228 * (self.window_size[1] / 400)))
         self.screen.blit(self.all_boxes[-4], (130 * (self.window_size[0] / 600), 83 * (self.window_size[1] / 400)))
-        self.health_bar_scale = (int(self.health_bar_scale[0] * (self.f_pokemon.current_hp / self.f_pokemon.max_hp)),
-                                 self.health_bar_scale[1])
-        self.all_boxes[-4] = pygame.transform.scale(self.all_boxes[-4], self.health_bar_scale)
+        health_bar_scale = (int(self.health_bar_scale[0] * (self.f_pokemon.current_hp / self.f_pokemon.max_hp)),
+                            self.health_bar_scale[1])
+        self.all_boxes[-4] = pygame.transform.scale(self.all_boxes[-4], health_bar_scale)
 
         pygame.display.flip()
 
