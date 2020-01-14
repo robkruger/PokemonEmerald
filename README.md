@@ -5,5 +5,9 @@ A Pokemon Emerald clone made with pygame [WIP]
 
 ![Screenshot 2](pics/2.png)
 
+![Screenshot 4](pics/4.png)
+
+![Screenshot 5](pics/5.png)
+
 # Map Maker
 ![Screenshot 3](pics/3.png)
