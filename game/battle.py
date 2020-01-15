@@ -75,6 +75,7 @@ class Battle(object):
         self.all_boxes.append(move_box3)
         self.all_boxes.append(move_box4)
         self.all_boxes.append(health_bar)
+        self.all_boxes.append(health_bar)
         self.all_boxes.append(friendly_box)
         self.all_boxes.append(enemy_box)
         self.all_boxes.append(turn_box)
@@ -91,12 +92,12 @@ class Battle(object):
         with open('assets/Pokemon/pokedex.json', encoding='utf-8') as f:
             datastore = json.load(f)
         self.f_pokemon = Pokemon("Bulbasaur", 1,
-                                 [Move("TACKLE", "NORMAL", 20), Move("GROWL", "NORMAL", 30),
-                                  Move("LEECH SEED", "GRASS", 40), Move("VINE WHIP", "GRASS", 5)],
+                                 [Move("TACKLE", "NORMAL", 20, 100), Move("GROWL", "NORMAL", 30, 100),
+                                  Move("LEECH SEED", "GRASS", 40, 100), Move("VINE WHIP", "GRASS", 5, 100)],
                                  5, datastore[1]['base'])
         self.e_pokemon = Pokemon(datastore[enemy_id - 1]['name']['english'], enemy_id,
-                                 [Move("TACKLE", "NORMAL", 20), Move("GROWL", "NORMAL", 30),
-                                  Move("LEECH SEED", "GRASS", 40), Move("VINE WHIP", "GRASS", 5)],
+                                 [Move("TACKLE", "NORMAL", 20, 100), Move("GROWL", "NORMAL", 30, 100),
+                                  Move("LEECH SEED", "GRASS", 40, 100), Move("VINE WHIP", "GRASS", 5, 100)],
                                  5, datastore[enemy_id - 1]['base'])
         self.doneDamage = False
 
@@ -165,9 +166,10 @@ class Battle(object):
                 self.totalText.append(c)
         elif len(self.currentText) == len(self.totalText) and self.state is BattleState.FRIENDLY_TURN and enter_pressed:
             self.doneDamage = False
-            self.doDamage(self.f_pokemon, self.e_pokemon)
+            self.doDamage(self.f_pokemon, self.e_pokemon, self.f_pokemon.moves[self.selection - 4])
         elif len(self.currentText) == len(self.totalText) \
                 and self.state is BattleState.FRIENDLY_TURN and self.doneDamage:
+            self.doneDamage = False
             self.state = BattleState.ENEMY_TURN
             text = self.e_pokemon.name + " used " + random.choice(self.e_pokemon.moves).name + "!"
             self.totalText = []
@@ -255,18 +257,26 @@ class Battle(object):
         self.drawText("Lv" + str(self.e_pokemon.level), (66, 66, 66), (222, 214, 181),
                       pygame.Rect(215, 52, 1000, 1000),
                       temp_font)
-        self.screen.blit(self.all_boxes[-4], (445 * (self.window_size[0] / 600), 228 * (self.window_size[1] / 400)))
+        self.screen.blit(self.all_boxes[-5], (445 * (self.window_size[0] / 600), 228 * (self.window_size[1] / 400)))
         self.screen.blit(self.all_boxes[-4], (130 * (self.window_size[0] / 600), 83 * (self.window_size[1] / 400)))
-        health_bar_scale = (int(self.health_bar_scale[0] * (self.f_pokemon.current_hp / self.f_pokemon.max_hp)),
+        health_bar_scale_f = (int(self.health_bar_scale[0] * (self.f_pokemon.current_hp / self.f_pokemon.max_hp)),
+                              self.health_bar_scale[1])
+        health_bar_scale_e = (int(self.health_bar_scale[0] * (self.e_pokemon.current_hp / self.e_pokemon.max_hp)),
                             self.health_bar_scale[1])
-        self.all_boxes[-4] = pygame.transform.scale(self.all_boxes[-4], health_bar_scale)
+        self.all_boxes[-5] = pygame.transform.scale(self.all_boxes[-5], health_bar_scale_f)
+        self.all_boxes[-4] = pygame.transform.scale(self.all_boxes[-4], health_bar_scale_e)
 
         pygame.display.flip()
 
-    def doDamage(self, user: Pokemon, target: Pokemon):
+    def doDamage(self, user: Pokemon, target: Pokemon, move: Move):
         print("damage")
         self.doneDamage = True
-        # damage = math.floor(math.floor(math.floor(2 * target.level / 5 + 2) * ))
+        level = user.level
+        power = move.power
+        a = user.attack
+        d = target.defense
+        damage = math.floor(math.floor(math.floor(2 * level / 5 + 2) * power * a / d) / 50 + 2)  # * modifier
+        target.current_hp = max(target.current_hp - damage, 0)
 
     def drawText(self, text, color, shadow_color, rect, font: pygame.font.Font, aa=False, bkg=None):
         rect = pygame.Rect(rect)
