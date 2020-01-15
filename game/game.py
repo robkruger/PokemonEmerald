@@ -72,7 +72,6 @@ class Game(object):
         self.player.add_frames_up(self.walk_up)
         self.player.add_frames_left(self.walk_left)
         self.player.add_frames_down(self.walk_down)
-        self.set_repeat(True, 0, 1)
         self.anim_count = 0
         self.battle = None
 
@@ -81,30 +80,31 @@ class Game(object):
         self.delta_time = self.clock.get_time()
         self.player.update_a(self.delta_time)
         self.player.update_img()
+        keys = pygame.key.get_pressed()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.Running = False
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_w and not self.start_moving and not self.moving:
-                    if self.movable(self.player.x, self.player.y - 1):
-                        self.start_moving_up = True
-                    else:
-                        self.player.set_anim(True, False, False, False)
-                elif event.key == pygame.K_s and not self.start_moving and not self.moving:
-                    if self.movable(self.player.x, self.player.y + 1):
-                        self.start_moving_down = True
-                    else:
-                        self.player.set_anim(False, False, False, True)
-                elif event.key == pygame.K_a and not self.start_moving and not self.moving:
-                    if self.movable(self.player.x - 1, self.player.y):
-                        self.start_moving_left = True
-                    else:
-                        self.player.set_anim(False, True, False, False)
-                elif event.key == pygame.K_d and not self.start_moving and not self.moving:
-                    if self.movable(self.player.x + 1, self.player.y):
-                        self.start_moving_right = True
-                    else:
-                        self.player.set_anim(False, False, True, False)
+
+        if (keys[pygame.K_w] or keys[pygame.K_UP]) and not self.start_moving and not self.moving:
+            if self.movable(self.player.x, self.player.y - 1):
+                self.start_moving_up = True
+            else:
+                self.player.set_anim(True, False, False, False)
+        elif (keys[pygame.K_s] or keys[pygame.K_DOWN]) and not self.start_moving and not self.moving:
+            if self.movable(self.player.x, self.player.y + 1):
+                self.start_moving_down = True
+            else:
+                self.player.set_anim(False, False, False, True)
+        elif (keys[pygame.K_a] or keys[pygame.K_LEFT]) and not self.start_moving and not self.moving:
+            if self.movable(self.player.x - 1, self.player.y):
+                self.start_moving_left = True
+            else:
+                self.player.set_anim(False, True, False, False)
+        elif (keys[pygame.K_d] or keys[pygame.K_RIGHT]) and not self.start_moving and not self.moving:
+            if self.movable(self.player.x + 1, self.player.y):
+                self.start_moving_right = True
+            else:
+                self.player.set_anim(False, False, True, False)
 
         self.moving = self.moving_left or self.moving_right or self.moving_up or self.moving_down
         self.start_moving = self.start_moving_left or self.start_moving_right or self.start_moving_up \
@@ -146,12 +146,6 @@ class Game(object):
 
         self.sprite_group.draw(self.screen)
         self.player_group.draw(self.screen)
-
-        # for x in range(15):
-        #     for y in range(10):
-        #         pygame.draw.rect(self.screen, [0, 0, 0],
-        #                          [x * self.cell_size + 22, y * self.cell_size + 15,
-        #                           self.cell_size, self.cell_size], 1)
 
         pygame.display.flip()
 
@@ -244,6 +238,7 @@ class Game(object):
             self.battle = None
             self.Battling = False
             pygame.display.set_caption('Overworld')
+            self.set_repeat(True, 1, 1)
 
     def set_repeat(self, enabled=True, interval=0, delay=0):
         if enabled:

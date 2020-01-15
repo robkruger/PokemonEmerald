@@ -2,6 +2,7 @@ import pygame
 import json
 import math
 import random
+import pokebase as pb
 
 from game.BattleType import BattleType
 from game.BattleState import BattleState
@@ -100,6 +101,9 @@ class Battle(object):
                                   Move("LEECH SEED", "GRASS", 40, 100), Move("VINE WHIP", "GRASS", 5, 100)],
                                  5, datastore[enemy_id - 1]['base'])
         self.doneDamage = False
+        self.enemyMove = None
+        self.endBattle = False
+        self.loser = None
 
     def parse_events(self, ticks):
         self.frames += 1
@@ -151,7 +155,14 @@ class Battle(object):
                     if self.selection == 4 or self.selection == 5 or self.selection == 6 or self.selection == 7:
                         self.selection = 0
 
-        if len(self.totalText) == 0 and self.state is BattleState.START:
+        if len(self.currentText) == len(self.totalText) and self.endBattle and enter_pressed:
+            self.game.Battling = False
+        elif self.endBattle:
+            text = self.loser.name + " fainted!"
+            self.totalText = []
+            for c in text:
+                self.totalText.append(c)
+        elif len(self.totalText) == 0 and self.state is BattleState.START:
             text = "A wild Pokémon appeared!"
             self.totalText = []
             for c in text:
@@ -170,17 +181,28 @@ class Battle(object):
         elif len(self.currentText) == len(self.totalText) \
                 and self.state is BattleState.FRIENDLY_TURN and self.doneDamage:
             self.doneDamage = False
+            if self.e_pokemon.current_hp == 0:
+                self.endBattle = True
+                self.loser = self.e_pokemon
+                self.currentText = []
+                return
             self.state = BattleState.ENEMY_TURN
-            text = self.e_pokemon.name + " used " + random.choice(self.e_pokemon.moves).name + "!"
+            self.enemyMove = random.choice(self.e_pokemon.moves)
+            text = self.e_pokemon.name + " used " + self.enemyMove.name + "!"
             self.totalText = []
             self.currentText = []
             self.text = ''
             for c in text:
                 self.totalText.append(c)
+        elif len(self.currentText) == len(self.totalText) \
+                and self.state is BattleState.ENEMY_TURN and enter_pressed:
+            self.doneDamage = False
+            self.doDamage(self.e_pokemon, self.f_pokemon, self.enemyMove)
         elif self.selection == 0 and enter_pressed:
             self.selection = 4
         elif len(self.currentText) == len(self.totalText) and (self.state is BattleState.START or BattleState.ENEMY_TURN)\
-                and enter_pressed:
+                and (enter_pressed or self.doneDamage):
+            self.doneDamage = False
             self.selection = 0
             self.state = BattleState.WAITING
             text = "What will " + self.f_pokemon.name + " do?"
@@ -262,14 +284,13 @@ class Battle(object):
         health_bar_scale_f = (int(self.health_bar_scale[0] * (self.f_pokemon.current_hp / self.f_pokemon.max_hp)),
                               self.health_bar_scale[1])
         health_bar_scale_e = (int(self.health_bar_scale[0] * (self.e_pokemon.current_hp / self.e_pokemon.max_hp)),
-                            self.health_bar_scale[1])
+                              self.health_bar_scale[1])
         self.all_boxes[-5] = pygame.transform.scale(self.all_boxes[-5], health_bar_scale_f)
         self.all_boxes[-4] = pygame.transform.scale(self.all_boxes[-4], health_bar_scale_e)
 
         pygame.display.flip()
 
     def doDamage(self, user: Pokemon, target: Pokemon, move: Move):
-        print("damage")
         self.doneDamage = True
         level = user.level
         power = move.power
