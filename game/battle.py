@@ -93,13 +93,13 @@ class Battle(object):
         with open('assets/Pokemon/pokedex.json', encoding='utf-8') as f:
             datastore = json.load(f)
         self.f_pokemon = Pokemon("Bulbasaur", 1,
-                                 [Move("TACKLE", "NORMAL", 20, 100), Move("GROWL", "NORMAL", 30, 100),
-                                  Move("LEECH SEED", "GRASS", 40, 100), Move("VINE WHIP", "GRASS", 5, 100)],
-                                 5, datastore[1]['base'])
+                                 [Move("TACKLE"), Move("GROWL"),
+                                  Move("LEECH SEED"), Move("VINE WHIP")],
+                                 5)
         self.e_pokemon = Pokemon(datastore[enemy_id - 1]['name']['english'], enemy_id,
-                                 [Move("TACKLE", "NORMAL", 20, 100), Move("GROWL", "NORMAL", 30, 100),
-                                  Move("LEECH SEED", "GRASS", 40, 100), Move("VINE WHIP", "GRASS", 5, 100)],
-                                 5, datastore[enemy_id - 1]['base'])
+                                 [Move("TACKLE"), Move("GROWL"),
+                                  Move("LEECH SEED"), Move("VINE WHIP")],
+                                 5)
         self.doneDamage = False
         self.enemyMove = None
         self.endBattle = False
@@ -292,6 +292,9 @@ class Battle(object):
 
     def doDamage(self, user: Pokemon, target: Pokemon, move: Move):
         self.doneDamage = True
+        if move.category != 'damage':
+            print(move.category)
+            return
         level = user.level
         power = move.power
         a = user.attack
