@@ -92,11 +92,8 @@ class Battle(object):
         self.last_text = 0
         with open('assets/Pokemon/pokedex.json', encoding='utf-8') as f:
             datastore = json.load(f)
-        self.f_pokemon = Pokemon("Bulbasaur", 1,
-                                 [Move("TACKLE"), Move("GROWL"),
-                                  Move("LEECH SEED"), Move("VINE WHIP")],
-                                 5)
-        self.e_pokemon = Pokemon(datastore[enemy_id - 1]['name']['english'], enemy_id,
+        self.f_pokemon = Pokemon(2, [Move("TACKLE"), Move("GROWL"), Move("LEECH SEED"), Move("VINE WHIP")], 5)
+        self.e_pokemon = Pokemon(enemy_id,
                                  [Move("TACKLE"), Move("GROWL"),
                                   Move("LEECH SEED"), Move("VINE WHIP")],
                                  5)
@@ -157,11 +154,6 @@ class Battle(object):
 
         if len(self.currentText) == len(self.totalText) and self.endBattle and enter_pressed:
             self.game.Battling = False
-        elif self.endBattle:
-            text = self.loser.name + " fainted!"
-            self.totalText = []
-            for c in text:
-                self.totalText.append(c)
         elif len(self.totalText) == 0 and self.state is BattleState.START:
             text = "A wild Pokémon appeared!"
             self.totalText = []
@@ -184,7 +176,11 @@ class Battle(object):
             if self.e_pokemon.current_hp == 0:
                 self.endBattle = True
                 self.loser = self.e_pokemon
+                text = self.loser.name + " fainted!"
                 self.currentText = []
+                self.totalText = []
+                for c in text:
+                    self.totalText.append(c)
                 return
             self.state = BattleState.ENEMY_TURN
             self.enemyMove = random.choice(self.e_pokemon.moves)
@@ -200,6 +196,14 @@ class Battle(object):
             self.doDamage(self.e_pokemon, self.f_pokemon, self.enemyMove)
         elif self.selection == 0 and enter_pressed:
             self.selection = 4
+        elif self.selection == 3 and enter_pressed:
+            self.endBattle = True
+            text = "Succesfully got away!"
+            self.totalText = []
+            self.currentText = []
+            self.text = ''
+            for c in text:
+                self.totalText.append(c)
         elif len(self.currentText) == len(self.totalText) and (self.state is BattleState.START or BattleState.ENEMY_TURN)\
                 and (enter_pressed or self.doneDamage):
             self.doneDamage = False
