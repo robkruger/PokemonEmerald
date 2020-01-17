@@ -35,7 +35,6 @@ class Battle(object):
         enemy_box = pygame.image.load('assets/UI/EnemyBox.png').convert_alpha()
         health_bar = pygame.image.load('assets/UI/health_bar.png').convert_alpha()
         self.pokemon_encounter = GIFImage('assets/Pokemon/Front/' + str(enemy_id) + '.gif', window_size)
-        self.friendly_pokemon = pygame.image.load('assets/Pokemon/Back/1.png').convert_alpha()
         self.arena_scale = (int((window_size[0] / 240) * self.arena.get_rect().size[0]),
                             int((window_size[1] / 160) * self.arena.get_rect().size[1]))
         self.decide_box_scale = (int((window_size[0] / 240) * decide_box_1.get_rect().size[0]),
@@ -44,15 +43,12 @@ class Battle(object):
                                int((window_size[1] / 160) * move_box1.get_rect().size[1]))
         self.enemy_scale = (int((window_size[0] / 240)),
                             int((window_size[1] / 160)))
-        self.friendly_scale = (int((window_size[0] / 240) * self.friendly_pokemon.get_rect().size[0]),
-                               int((window_size[1] / 160) * self.friendly_pokemon.get_rect().size[1]))
         self.friendly_box_scale = (int((window_size[0] / 240) * friendly_box.get_rect().size[0]),
                                    int((window_size[1] / 160) * friendly_box.get_rect().size[1]))
         self.enemy_box_scale = (int((window_size[0] / 240) * enemy_box.get_rect().size[0]),
                                 int((window_size[1] / 160) * enemy_box.get_rect().size[1]))
         self.health_bar_scale = (int((window_size[0] / 240) * health_bar.get_rect().size[0]),
                                  int((window_size[1] / 160) * health_bar.get_rect().size[1]))
-        self.friendly_pokemon = pygame.transform.scale(self.friendly_pokemon, self.friendly_scale)
         decide_box_1 = pygame.transform.scale(decide_box_1, self.decide_box_scale)
         decide_box_2 = pygame.transform.scale(decide_box_2, self.decide_box_scale)
         decide_box_3 = pygame.transform.scale(decide_box_3, self.decide_box_scale)
@@ -90,13 +86,12 @@ class Battle(object):
         self.friendly_offset = 0
         self.last_offset = 0
         self.last_text = 0
-        with open('assets/Pokemon/pokedex.json', encoding='utf-8') as f:
-            datastore = json.load(f)
-        self.f_pokemon = Pokemon(2, [Move("TACKLE"), Move("GROWL"), Move("LEECH SEED"), Move("VINE WHIP")], 5)
-        self.e_pokemon = Pokemon(enemy_id,
-                                 [Move("TACKLE"), Move("GROWL"),
-                                  Move("LEECH SEED"), Move("VINE WHIP")],
-                                 5)
+        self.f_pokemon = Pokemon(1, [Move("TACKLE"), Move("GROWL"), Move("LEECH SEED"), Move("VINE WHIP")], 5)
+        self.e_pokemon = Pokemon(enemy_id, [Move("TACKLE"), Move("GROWL"), Move("LEECH SEED"), Move("VINE WHIP")], 5)
+        self.friendly_pokemon = pygame.image.load('assets/Pokemon/Back/' + str(self.f_pokemon.id) + '.png').convert_alpha()
+        self.friendly_scale = (int((window_size[0] / 240) * self.friendly_pokemon.get_rect().size[0]),
+                               int((window_size[1] / 160) * self.friendly_pokemon.get_rect().size[1]))
+        self.friendly_pokemon = pygame.transform.scale(self.friendly_pokemon, self.friendly_scale)
         self.doneDamage = False
         self.enemyMove = None
         self.endBattle = False
@@ -225,8 +220,11 @@ class Battle(object):
                                            * (self.window_size[0] / 600)),
                                        int((160 - self.pokemon_encounter.get_height() * self.enemy_scale[1])
                                            * (self.window_size[1] / 400))))
-        self.screen.blit(self.friendly_pokemon, (int(70 * (self.window_size[0] / 600)),
-                                                 int((161 + self.friendly_offset) * (self.window_size[1] / 400))))
+        self.screen.blit(self.friendly_pokemon, (int((140 - self.pokemon_encounter.get_width() * self.enemy_scale[0] / 2)
+                                                     * (self.window_size[0] / 600)),
+                                                 int((300 + self.friendly_offset
+                                                      - self.pokemon_encounter.get_height()
+                                                      * self.enemy_scale[1]) * (self.window_size[1] / 400))))
 
         if self.state is BattleState.WAITING:
             if self.selection < 4:
