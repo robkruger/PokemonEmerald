@@ -87,10 +87,11 @@ class Battle(object):
         self.friendly_offset = 0
         self.last_offset = 0
         self.last_text = 0
-        self.f_pokemon = Pokemon(380, [Move("TACKLE"), Move("GROWL"), Move("LEECH SEED"), Move("VINE WHIP")], 5)
-        self.e_pokemon = Pokemon(enemy_id, [Move("TACKLE"), Move("GROWL"), Move("LEECH SEED"), Move("VINE WHIP")], 5)
+        self.f_pokemon = Pokemon(102, 5)
+        self.e_pokemon = Pokemon(enemy_id, 5)
         self.friendly_pokemon = pygame.image.load(
             'assets/Pokemon/Back/' + str(self.f_pokemon.id) + '.png').convert_alpha()
+        self.friendly_pokemon = pygame.image.load('assets/Pokemon/Back/' + str(self.f_pokemon.id) + '.png')
         self.friendly_scale = (int((window_size[0] / 240) * self.friendly_pokemon.get_rect().size[0]),
                                int((window_size[1] / 160) * self.friendly_pokemon.get_rect().size[1]))
         self.friendly_pokemon = pygame.transform.scale(self.friendly_pokemon, self.friendly_scale)
@@ -107,6 +108,7 @@ class Battle(object):
                 self.Battling = False
                 self.game.Running = False
             if event.type == pygame.KEYDOWN:
+                moves = len(self.f_pokemon.moves)
                 if event.key == pygame.K_LEFT and self.state is BattleState.WAITING:
                     if self.selection == 2:
                         self.selection = 0
@@ -121,9 +123,9 @@ class Battle(object):
                         self.selection = 2
                     elif self.selection == 1:
                         self.selection = 3
-                    elif self.selection == 4:
+                    elif self.selection == 4 and moves > 2:
                         self.selection = 6
-                    elif self.selection == 5:
+                    elif self.selection == 5 and moves > 3:
                         self.selection = 7
                 elif event.key == pygame.K_UP and self.state is BattleState.WAITING:
                     if self.selection == 1:
@@ -139,9 +141,9 @@ class Battle(object):
                         self.selection = 1
                     elif self.selection == 2:
                         self.selection = 3
-                    elif self.selection == 4:
+                    elif self.selection == 4 and moves > 1:
                         self.selection = 5
-                    elif self.selection == 6:
+                    elif self.selection == 6 and moves > 3:
                         self.selection = 7
                 elif event.key == pygame.K_RETURN:
                     enter_pressed = True
@@ -233,12 +235,12 @@ class Battle(object):
         if self.state is BattleState.WAITING:
             if self.selection < 4:
                 self.screen.blit(self.all_boxes[self.selection], (0, self.arena.get_rect().size[1]))
-                self.drawText(self.text, (255, 255, 255), (55, 55, 55), pygame.Rect(30, 295, 250, 300), self.font)
+                self.drawText(self.text, (255, 255, 255), (55, 55, 55), pygame.Rect(30, 300, 250, 300), self.font)
             else:
                 self.screen.blit(self.all_boxes[self.selection], (0, self.arena.get_rect().size[1]))
         elif self.state is BattleState.FRIENDLY_TURN or BattleState.ENEMY_TURN or BattleState.START:
             self.screen.blit(self.all_boxes[-1], (0, self.arena.get_rect().size[1]))
-            self.drawText(self.text, (255, 255, 255), (55, 55, 55), pygame.Rect(30, 295, 550, 300), self.font)
+            self.drawText(self.text, (255, 255, 255), (55, 55, 55), pygame.Rect(30, 300, 550, 300), self.font)
 
         self.screen.blit(self.all_boxes[-3], (325 * (self.window_size[0] / 600), 185 * (self.window_size[1] / 400)))
         self.screen.blit(self.all_boxes[-2], (30 * (self.window_size[0] / 600), 40 * (self.window_size[1] / 400)))
@@ -254,21 +256,38 @@ class Battle(object):
             self.last_offset = delta
 
         if 3 < self.selection < 8 and self.state is BattleState.WAITING:
-            self.drawText(self.f_pokemon.moves[0].name, (72, 72, 72), (208, 208, 200),
-                          pygame.Rect(40, 23 + self.arena.get_rect().size[1], 300, 400), self.font)
-            self.drawText(self.f_pokemon.moves[1].name, (72, 72, 72), (208, 208, 200),
-                          pygame.Rect(40, 63 + self.arena.get_rect().size[1], 300, 400), self.font)
-            self.drawText(self.f_pokemon.moves[2].name, (72, 72, 72), (208, 208, 200),
-                          pygame.Rect(242, 23 + self.arena.get_rect().size[1], 300, 400), self.font)
-            self.drawText(self.f_pokemon.moves[3].name, (72, 72, 72), (208, 208, 200),
-                          pygame.Rect(242, 63 + self.arena.get_rect().size[1], 300, 400), self.font)
+            moves = len(self.f_pokemon.moves)
+            if moves > 0:
+                self.drawText(self.f_pokemon.moves[0].name, (72, 72, 72), (208, 208, 200),
+                              pygame.Rect(40, 23 + self.arena.get_rect().size[1], 300, 400), self.font, True)
+            else:
+                self.drawText('-', (72, 72, 72), (208, 208, 200),
+                              pygame.Rect(40, 23 + self.arena.get_rect().size[1], 300, 400), self.font, True)
+            if moves > 1:
+                self.drawText(self.f_pokemon.moves[1].name, (72, 72, 72), (208, 208, 200),
+                              pygame.Rect(40, 63 + self.arena.get_rect().size[1], 300, 400), self.font, True)
+            else:
+                self.drawText('-', (72, 72, 72), (208, 208, 200),
+                              pygame.Rect(40, 63 + self.arena.get_rect().size[1], 300, 400), self.font, True)
+            if moves > 2:
+                self.drawText(self.f_pokemon.moves[2].name, (72, 72, 72), (208, 208, 200),
+                              pygame.Rect(242, 23 + self.arena.get_rect().size[1], 300, 400), self.font, True)
+            else:
+                self.drawText('-', (72, 72, 72), (208, 208, 200),
+                              pygame.Rect(242, 23 + self.arena.get_rect().size[1], 300, 400), self.font, True)
+            if moves > 3:
+                self.drawText(self.f_pokemon.moves[3].name, (72, 72, 72), (208, 208, 200),
+                              pygame.Rect(242, 63 + self.arena.get_rect().size[1], 300, 400), self.font, True)
+            else:
+                self.drawText('-', (72, 72, 72), (208, 208, 200),
+                              pygame.Rect(242, 63 + self.arena.get_rect().size[1], 300, 400), self.font, True)
             self.drawText("PP", (72, 72, 72), (208, 208, 200),
-                          pygame.Rect(430, 22 + self.arena.get_rect().size[1], 300, 400), self.font)
+                          pygame.Rect(430, 22 + self.arena.get_rect().size[1], 300, 400), self.font, True)
             self.drawText(str(1) + "/" + str(self.f_pokemon.moves[self.selection - 4].pp), (72, 72, 72),
                           (208, 208, 200),
-                          pygame.Rect(505, 22 + self.arena.get_rect().size[1], 300, 400), self.font)
+                          pygame.Rect(505, 22 + self.arena.get_rect().size[1], 300, 400), self.font, True)
             self.drawText("TYPE/" + str(self.f_pokemon.moves[self.selection - 4].type), (72, 72, 72), (208, 208, 200),
-                          pygame.Rect(430, 62 + self.arena.get_rect().size[1], 300, 400), self.font)
+                          pygame.Rect(430, 62 + self.arena.get_rect().size[1], 300, 400), self.font, True)
 
         temp_font = pygame.font.Font('assets/font/pokemon-emerald-pro.ttf', 28)
         self.drawText(str(self.f_pokemon.current_hp), (66, 66, 66), (222, 214, 181),
@@ -310,7 +329,7 @@ class Battle(object):
         damage = math.floor(math.floor(math.floor(2 * level / 5 + 2) * power * a / d) / 50 + 2)  # * modifier
         target.current_hp = max(target.current_hp - damage, 0)
 
-    def drawText(self, text, color, shadow_color, rect, font: pygame.font.Font, aa=False, bkg=None):
+    def drawText(self, text, color, shadow_color, rect, font: pygame.font.Font, scale=False):
         rect = pygame.Rect(rect)
         y = rect.top
         lineSpacing = -2
@@ -329,13 +348,12 @@ class Battle(object):
             if i < len(text):
                 i = text.rfind(" ", 0, i) + 1
 
-            if bkg:
-                image = font.render(text[:i], 1, color, bkg)
-                shadow = font.render(text[:i], aa, shadow_color, bkg)
-                image.set_colorkey(bkg)
-            else:
-                image = font.render(text[:i], aa, color)
-                shadow = font.render(text[:i], aa, shadow_color)
+            image = font.render(text[:i], False, color).convert_alpha()
+            shadow = font.render(text[:i], False, shadow_color).convert_alpha()
+
+            if scale:
+                image = pygame.transform.smoothscale(image, (int(image.get_rect().size[0] * 0.9), image.get_rect().size[1]))
+                shadow = pygame.transform.smoothscale(shadow, (int(shadow.get_rect().size[0] * 0.9), shadow.get_rect().size[1]))
 
             self.screen.blit(shadow, (rect.left + (self.window_size[0] / 240) * (fontHeight / 36),
                                       y + (self.window_size[1] / 160) * (fontHeight / 36)))

@@ -5,7 +5,7 @@ import pokebase as pb
 class Move(object):
 
     def __init__(self, name):
-        self.name = name
+        self.name = name.replace('-', ' ').lower().capitalize()
         move: list
         move = []
         try:
@@ -28,7 +28,7 @@ class Move(object):
                     print(e)
                 pass
         move: dict
-        self.type = move[0]['type']['name'].upper()
+        self.type = move[0]['type']['name'].capitalize()
         self.pp = move[0]['pp']
         self.power = move[0]['power']
         self.category = move[0]['meta']['category']['name']
