@@ -87,8 +87,8 @@ class Battle(object):
         self.friendly_offset = 0
         self.last_offset = 0
         self.last_text = 0
-        self.f_pokemon = Pokemon(102, 5)
-        self.e_pokemon = Pokemon(enemy_id, 5)
+        self.f_pokemon = Pokemon(102, 55)
+        self.e_pokemon = Pokemon(enemy_id, 55)
         self.friendly_pokemon = pygame.image.load(
             'assets/Pokemon/Back/' + str(self.f_pokemon.id) + '.png').convert_alpha()
         self.friendly_pokemon = pygame.image.load('assets/Pokemon/Back/' + str(self.f_pokemon.id) + '.png')
@@ -99,6 +99,25 @@ class Battle(object):
         self.enemyMove = None
         self.endBattle = False
         self.loser = None
+        self.mod_table = {-6: 0.25,
+                          -5: 0.28,
+                          -4: 0.33,
+                          -3: 0.4,
+                          -2: 0.5,
+                          -1: 0.66,
+                           0: 1,
+                           1: 1.5,
+                           2: 2,
+                           3: 2.5,
+                           4: 3,
+                           5: 3.5,
+                           6: 4}
+        self.stat = {'speed': 0,
+                     'special-defense': 1,
+                     'special-attack': 2,
+                     'defense': 3,
+                     'attack': 4,
+                     'hp': 5}
 
     def parse_events(self, ticks):
         self.frames += 1
@@ -271,19 +290,19 @@ class Battle(object):
                               pygame.Rect(40, 63 + self.arena.get_rect().size[1], 300, 400), self.font, True)
             if moves > 2:
                 self.drawText(self.f_pokemon.moves[2].name, (72, 72, 72), (208, 208, 200),
-                              pygame.Rect(242, 23 + self.arena.get_rect().size[1], 300, 400), self.font, True)
+                              pygame.Rect(225, 23 + self.arena.get_rect().size[1], 300, 400), self.font, True)
             else:
                 self.drawText('-', (72, 72, 72), (208, 208, 200),
-                              pygame.Rect(242, 23 + self.arena.get_rect().size[1], 300, 400), self.font, True)
+                              pygame.Rect(225, 23 + self.arena.get_rect().size[1], 300, 400), self.font, True)
             if moves > 3:
                 self.drawText(self.f_pokemon.moves[3].name, (72, 72, 72), (208, 208, 200),
-                              pygame.Rect(242, 63 + self.arena.get_rect().size[1], 300, 400), self.font, True)
+                              pygame.Rect(225, 63 + self.arena.get_rect().size[1], 300, 400), self.font, True)
             else:
                 self.drawText('-', (72, 72, 72), (208, 208, 200),
-                              pygame.Rect(242, 63 + self.arena.get_rect().size[1], 300, 400), self.font, True)
+                              pygame.Rect(225, 63 + self.arena.get_rect().size[1], 300, 400), self.font, True)
             self.drawText("PP", (72, 72, 72), (208, 208, 200),
                           pygame.Rect(430, 22 + self.arena.get_rect().size[1], 300, 400), self.font, True)
-            self.drawText(str(1) + "/" + str(self.f_pokemon.moves[self.selection - 4].pp), (72, 72, 72),
+            self.drawText(str(self.f_pokemon.moves[self.selection - 4].current_pp) + "/" + str(self.f_pokemon.moves[self.selection - 4].max_pp), (72, 72, 72),
                           (208, 208, 200),
                           pygame.Rect(505, 22 + self.arena.get_rect().size[1], 300, 400), self.font, True)
             self.drawText("TYPE/" + str(self.f_pokemon.moves[self.selection - 4].type), (72, 72, 72), (208, 208, 200),
@@ -299,12 +318,12 @@ class Battle(object):
         self.drawText(str(self.f_pokemon.name), (66, 66, 66), (222, 214, 181), pygame.Rect(367, 195, 1000, 1000),
                       temp_font)
         self.drawText("Lv" + str(self.f_pokemon.level), (66, 66, 66), (222, 214, 181),
-                      pygame.Rect(530, 195, 1000, 1000),
+                      pygame.Rect(510, 195, 1000, 1000),
                       temp_font)
         self.drawText(str(self.e_pokemon.name), (66, 66, 66), (222, 214, 181), pygame.Rect(43, 50, 1000, 1000),
                       temp_font)
         self.drawText("Lv" + str(self.e_pokemon.level), (66, 66, 66), (222, 214, 181),
-                      pygame.Rect(215, 52, 1000, 1000),
+                      pygame.Rect(195, 52, 1000, 1000),
                       temp_font)
         self.screen.blit(self.all_boxes[-5], (445 * (self.window_size[0] / 600), 228 * (self.window_size[1] / 400)))
         self.screen.blit(self.all_boxes[-4], (130 * (self.window_size[0] / 600), 83 * (self.window_size[1] / 400)))
@@ -319,15 +338,19 @@ class Battle(object):
 
     def doDamage(self, user: Pokemon, target: Pokemon, move: Move):
         self.doneDamage = True
-        if move.category != 'damage':
-            print(move.category)
-            return
-        level = user.level
-        power = move.power
-        a = user.attack
-        d = target.defense
-        damage = math.floor(math.floor(math.floor(2 * level / 5 + 2) * power * a / d) / 50 + 2)  # * modifier
-        target.current_hp = max(target.current_hp - damage, 0)
+        if move.move_class == 'physical':
+            level = user.level
+            power = move.power
+            a = user.attack * self.mod_table[user.mod_values[self.stat['attack']]]
+            d = target.defense * self.mod_table[user.mod_values[self.stat['defense']]]
+            damage = math.floor(math.floor(math.floor(2 * level / 5 + 2) * power * a / d) / 50 + 2)  # * modifier
+            target.current_hp = max(target.current_hp - damage, 0)
+        elif move.move_class == 'status':
+            for stat_change in move.get_value('stat_changes'):
+                target.mod_values[self.stat[stat_change['stat']['name']]] += stat_change['change']
+        elif move.move_class == 'special':
+            print('special')
+        move.current_pp -= 1
 
     def drawText(self, text, color, shadow_color, rect, font: pygame.font.Font, scale=False):
         rect = pygame.Rect(rect)

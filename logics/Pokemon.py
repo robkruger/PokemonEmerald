@@ -39,20 +39,21 @@ class Pokemon(object):
                 except Exception as e:
                     print(e)
                 pass
-        self.stat = {'Speed': 0,
-                     'Sp. Defense': 1,
-                     'Sp. Attack': 2,
-                     'Defense': 3,
-                     'Attack': 4,
-                     'HP': 5}
+        self.stat = {'speed': 0,
+                     'special-defense': 1,
+                     'special-attack': 2,
+                     'defense': 3,
+                     'attack': 4,
+                     'hp': 5}
         self.name = self.pokemon[0]['name'].capitalize()
-        self.max_hp = math.floor((2 * self.get_stat('HP', 'base_stat') + self.iv + (0 / 4) * level) / 100 + level + 10)
+        self.max_hp = math.floor((2 * self.get_stat('hp', 'base_stat') + self.iv + (0 / 4) * level) / 100 + level + 10)
         self.current_hp = self.max_hp
-        self.attack = math.floor((2 * self.get_stat('Attack', 'base_stat') + self.iv + (self.attack_ev / 4) * level) / 100 + 5)  # * nature
-        self.defense = math.floor((2 * self.get_stat('Defense', 'base_stat') + self.iv + (self.defense_ev / 4) * level) / 100 + 5)  # * nature
-        self.speed = math.floor((2 * self.get_stat('Speed', 'base_stat') + self.iv + (self.speed_ev / 4) * level) / 100 + 5)  # * nature
-        self.sp_attack = math.floor((2 * self.get_stat('Sp. Attack', 'base_stat') + self.iv + (self.sp_attack_ev / 4) * level) / 100 + 5)  # * nature
-        self.sp_defense = math.floor((2 * self.get_stat('Sp. Defense', 'base_stat') + self.iv + (self.sp_defense_ev / 4) * level) / 100 + 5)  # * nature
+        self.attack = math.floor((2 * self.get_stat('attack', 'base_stat') + self.iv + (self.attack_ev / 4) * level) / 100 + 5)  # * nature
+        self.defense = math.floor((2 * self.get_stat('defense', 'base_stat') + self.iv + (self.defense_ev / 4) * level) / 100 + 5)  # * nature
+        self.speed = math.floor((2 * self.get_stat('speed', 'base_stat') + self.iv + (self.speed_ev / 4) * level) / 100 + 5)  # * nature
+        self.sp_attack = math.floor((2 * self.get_stat('special-attack', 'base_stat') + self.iv + (self.sp_attack_ev / 4) * level) / 100 + 5)  # * nature
+        self.sp_defense = math.floor((2 * self.get_stat('special-defense', 'base_stat') + self.iv + (self.sp_defense_ev / 4) * level) / 100 + 5)  # * nature
+        self.mod_values = [0, 0, 0, 0, 0]
         self.moves = []
         for move in self.pokemon[0]['moves']:
             i = 0
@@ -60,7 +61,6 @@ class Pokemon(object):
                 if version['version_group']['name'] == "emerald":
                     if move['version_group_details'][i]['move_learn_method']['name'] == 'level-up':
                         if move['version_group_details'][i]['level_learned_at'] <= self.level:
-                            print(version)
                             self.moves.append(Move(move['move']['name']))
                 i += 1
 
