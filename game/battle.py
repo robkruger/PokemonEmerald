@@ -121,7 +121,7 @@ class Battle(object):
         self.start_hp = -1
         self.dest_hp = -1
         self.damaging = False
-        self.speed = 15
+        self.speed = 1
 
     def parse_events(self, ticks):
         self.frames += 1
@@ -346,10 +346,10 @@ class Battle(object):
 
     def doDamage(self, user: Pokemon, target: Pokemon, move: Move):
         if self.start_hp != -1:
-            if target.current_hp > self.dest_hp:
-                target.current_hp -= (self.start_hp / self.dest_hp) * (self.speed / 100)
+            if target.current_hp > self.dest_hp and target.current_hp > 0:
+                target.current_hp -= max((self.start_hp - self.dest_hp) * (self.speed / 100), 0)
             else:
-                target.current_hp = self.dest_hp
+                target.current_hp = max(self.dest_hp, 0)
                 self.damaging = False
                 self.doneDamage = True
                 self.start_hp = -1
@@ -360,7 +360,7 @@ class Battle(object):
             a = user.attack * self.mod_table[user.mod_values[self.stat['attack']]]
             d = target.defense * self.mod_table[user.mod_values[self.stat['defense']]]
             damage = math.floor(math.floor(math.floor(2 * level / 5 + 2) * power * a / d) / 50 + 2)  # * modifier
-            self.dest_hp = max(target.current_hp - damage, 0)
+            self.dest_hp = target.current_hp - damage
             self.start_hp = target.current_hp
         elif move.move_class == 'status':
             for stat_change in move.get_value('stat_changes'):
