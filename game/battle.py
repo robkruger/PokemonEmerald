@@ -87,7 +87,7 @@ class Battle(object):
         self.friendly_offset = 0
         self.last_offset = 0
         self.last_text = 0
-        self.f_pokemon = Pokemon(102, 55)
+        self.f_pokemon = Pokemon(20, 55)
         self.e_pokemon = Pokemon(enemy_id, 55)
         self.friendly_pokemon = pygame.image.load(
             'assets/Pokemon/Back/' + str(self.f_pokemon.id) + '.png').convert_alpha()
@@ -118,6 +118,10 @@ class Battle(object):
                      'defense': 3,
                      'attack': 4,
                      'hp': 5}
+        self.start_hp = -1
+        self.dest_hp = -1
+        self.damaging = False
+        self.speed = 15
 
     def parse_events(self, ticks):
         self.frames += 1
@@ -172,6 +176,10 @@ class Battle(object):
 
         if len(self.currentText) == len(self.totalText) and self.endBattle and enter_pressed:
             self.game.Battling = False
+        elif self.damaging and self.state is BattleState.FRIENDLY_TURN:
+            self.doDamage(self.f_pokemon, self.e_pokemon, self.f_pokemon.moves[self.selection - 4])
+        elif self.damaging and self.state is BattleState.ENEMY_TURN:
+            self.doDamage(self.e_pokemon, self.f_pokemon, self.enemyMove)
         elif len(self.totalText) == 0 and self.state is BattleState.START:
             text = "A wild Pokémon appeared!"
             self.totalText = []
@@ -187,7 +195,7 @@ class Battle(object):
                 self.totalText.append(c)
         elif len(self.currentText) == len(self.totalText) and self.state is BattleState.FRIENDLY_TURN and enter_pressed:
             self.doneDamage = False
-            self.doDamage(self.f_pokemon, self.e_pokemon, self.f_pokemon.moves[self.selection - 4])
+            self.damaging = True
         elif len(self.currentText) == len(self.totalText) \
                 and self.state is BattleState.FRIENDLY_TURN and self.doneDamage:
             self.doneDamage = False
@@ -211,7 +219,7 @@ class Battle(object):
         elif len(self.currentText) == len(self.totalText) \
                 and self.state is BattleState.ENEMY_TURN and enter_pressed:
             self.doneDamage = False
-            self.doDamage(self.e_pokemon, self.f_pokemon, self.enemyMove)
+            self.damaging = True
         elif self.selection == 0 and enter_pressed:
             self.selection = 4
         elif self.selection == 3 and enter_pressed:
@@ -309,7 +317,7 @@ class Battle(object):
                           pygame.Rect(430, 62 + self.arena.get_rect().size[1], 300, 400), self.font, True)
 
         temp_font = pygame.font.Font('assets/font/pokemon-emerald-pro.ttf', 28)
-        self.drawText(str(self.f_pokemon.current_hp), (66, 66, 66), (222, 214, 181),
+        self.drawText(str(math.floor(self.f_pokemon.current_hp)), (66, 66, 66), (222, 214, 181),
                       pygame.Rect(492, 238, 1000, 1000), temp_font)
         self.drawText("/", (66, 66, 66), (222, 214, 181),
                       pygame.Rect(514, 237, 1000, 1000), temp_font)
@@ -337,19 +345,32 @@ class Battle(object):
         pygame.display.flip()
 
     def doDamage(self, user: Pokemon, target: Pokemon, move: Move):
-        self.doneDamage = True
-        if move.move_class == 'physical':
+        if self.start_hp != -1:
+            if target.current_hp > self.dest_hp:
+                target.current_hp -= (self.start_hp / self.dest_hp) * (self.speed / 100)
+            else:
+                target.current_hp = self.dest_hp
+                self.damaging = False
+                self.doneDamage = True
+                self.start_hp = -1
+                self.dest_hp = -1
+        elif move.move_class == 'physical':
             level = user.level
             power = move.power
             a = user.attack * self.mod_table[user.mod_values[self.stat['attack']]]
             d = target.defense * self.mod_table[user.mod_values[self.stat['defense']]]
             damage = math.floor(math.floor(math.floor(2 * level / 5 + 2) * power * a / d) / 50 + 2)  # * modifier
-            target.current_hp = max(target.current_hp - damage, 0)
+            self.dest_hp = max(target.current_hp - damage, 0)
+            self.start_hp = target.current_hp
         elif move.move_class == 'status':
             for stat_change in move.get_value('stat_changes'):
                 target.mod_values[self.stat[stat_change['stat']['name']]] += stat_change['change']
+            self.damaging = False
+            self.doneDamage = True
         elif move.move_class == 'special':
             print('special')
+            self.damaging = False
+            self.doneDamage = True
         move.current_pp -= 1
 
     def drawText(self, text, color, shadow_color, rect, font: pygame.font.Font, scale=False):
