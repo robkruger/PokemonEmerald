@@ -121,9 +121,9 @@ class Battle(object):
         self.start_hp = -1
         self.dest_hp = -1
         self.damaging = False
-        self.speed = 1
+        self.speed = 250
 
-    def parse_events(self, ticks):
+    def parse_events(self, delta):
         self.frames += 1
         enter_pressed = False
         for event in pygame.event.get():
@@ -177,9 +177,9 @@ class Battle(object):
         if len(self.currentText) == len(self.totalText) and self.endBattle and enter_pressed:
             self.game.Battling = False
         elif self.damaging and self.state is BattleState.FRIENDLY_TURN:
-            self.doDamage(self.f_pokemon, self.e_pokemon, self.f_pokemon.moves[self.selection - 4])
+            self.doDamage(self.f_pokemon, self.e_pokemon, self.f_pokemon.moves[self.selection - 4], delta)
         elif self.damaging and self.state is BattleState.ENEMY_TURN:
-            self.doDamage(self.e_pokemon, self.f_pokemon, self.enemyMove)
+            self.doDamage(self.e_pokemon, self.f_pokemon, self.enemyMove, delta)
         elif len(self.totalText) == 0 and self.state is BattleState.START:
             text = "A wild Pokémon appeared!"
             self.totalText = []
@@ -344,10 +344,10 @@ class Battle(object):
 
         pygame.display.flip()
 
-    def doDamage(self, user: Pokemon, target: Pokemon, move: Move):
+    def doDamage(self, user: Pokemon, target: Pokemon, move: Move, delta):
         if self.start_hp != -1:
             if target.current_hp > self.dest_hp and target.current_hp > 0:
-                target.current_hp -= max((self.start_hp - self.dest_hp) * (self.speed / 100), 0)
+                target.current_hp -= max((self.start_hp - self.dest_hp) * (self.speed / 100) * (delta / 1000), 0)
             else:
                 target.current_hp = max(self.dest_hp, 0)
                 self.damaging = False
