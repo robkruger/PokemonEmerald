@@ -22,6 +22,7 @@ class GIFImage(object):
         self.breakpoint = len(self.frames)-1
         self.startpoint = 0
         self.reversed = False
+        self.playtime = 0
 
     def get_rect(self):
         return pygame.rect.Rect((0,0), self.image.size)
@@ -169,6 +170,15 @@ class GIFImage(object):
     def length(self):
         return len(self.frames)
 
+    def get_duration(self):
+        duration = 0
+        for dur in self.frames:
+            duration += dur[1]
+        return duration
+
+    def get_playtime(self):
+        return self.playtime
+
     def reverse(self):
         self.reversed = not self.reversed
 
@@ -176,6 +186,7 @@ class GIFImage(object):
         self.cur = 0
         self.ptime = time.time()
         self.reversed = False
+        self.running = True
 
     def copy(self):
         new = GIFImage(self.filename)

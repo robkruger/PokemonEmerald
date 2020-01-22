@@ -36,6 +36,8 @@ class Battle(object):
         enemy_box = pygame.image.load('assets/UI/EnemyBox.png').convert_alpha()
         health_bar = pygame.image.load('assets/UI/health_bar.png').convert_alpha()
         self.pokemon_encounter = GIFImage('assets/Pokemon/Front/' + str(enemy_id) + '.gif', window_size)
+        self.attack_anim = GIFImage('assets/UI/attack_anim.gif', window_size)
+        self.attack_anim.running = False
         self.arena_scale = (int((window_size[0] / 240) * self.arena.get_rect().size[0]),
                             int((window_size[1] / 160) * self.arena.get_rect().size[1]))
         self.decide_box_scale = (int((window_size[0] / 240) * decide_box_1.get_rect().size[0]),
@@ -87,8 +89,8 @@ class Battle(object):
         self.friendly_offset = 0
         self.last_offset = 0
         self.last_text = 0
-        self.f_pokemon = Pokemon(20, 55)
-        self.e_pokemon = Pokemon(enemy_id, 55)
+        self.f_pokemon = Pokemon(20, 5)
+        self.e_pokemon = Pokemon(enemy_id, 5)
         self.friendly_pokemon = pygame.image.load(
             'assets/Pokemon/Back/' + str(self.f_pokemon.id) + '.png').convert_alpha()
         self.friendly_pokemon = pygame.image.load('assets/Pokemon/Back/' + str(self.f_pokemon.id) + '.png')
@@ -122,6 +124,9 @@ class Battle(object):
         self.dest_hp = -1
         self.damaging = False
         self.speed = 250
+        self.attack_animation = True
+        self.moveUsed = False
+        self.anim_pos = (0, 0)
 
     def parse_events(self, delta):
         self.frames += 1
@@ -194,11 +199,19 @@ class Battle(object):
             for c in text:
                 self.totalText.append(c)
         elif len(self.currentText) == len(self.totalText) and self.state is BattleState.FRIENDLY_TURN and enter_pressed:
+            if self.f_pokemon.moves[self.selection - 4].move_class == "physical":
+                self.attack_animation = False
+                self.moveUsed = True
+                self.anim_pos = (393, 88)
+            else:
+                self.moveUsed = True
+        elif self.attack_animation and self.state is BattleState.FRIENDLY_TURN and self.moveUsed and not self.doneDamage:
             self.doneDamage = False
             self.damaging = True
         elif len(self.currentText) == len(self.totalText) \
                 and self.state is BattleState.FRIENDLY_TURN and self.doneDamage:
             self.doneDamage = False
+            self.moveUsed = False
             if self.e_pokemon.current_hp == 0:
                 self.endBattle = True
                 self.loser = self.e_pokemon
@@ -218,6 +231,13 @@ class Battle(object):
                 self.totalText.append(c)
         elif len(self.currentText) == len(self.totalText) \
                 and self.state is BattleState.ENEMY_TURN and enter_pressed:
+            if self.enemyMove.move_class == "physical":
+                self.attack_animation = False
+                self.moveUsed = True
+                self.anim_pos = (120, 200)
+            else:
+                self.moveUsed = True
+        elif self.attack_animation and self.state is BattleState.ENEMY_TURN and self.moveUsed and not self.doneDamage:
             self.doneDamage = False
             self.damaging = True
         elif self.selection == 0 and enter_pressed:
@@ -234,6 +254,7 @@ class Battle(object):
                 self.state is BattleState.START or BattleState.ENEMY_TURN) \
                 and (enter_pressed or self.doneDamage):
             self.doneDamage = False
+            self.moveUsed = False
             self.selection = 0
             self.state = BattleState.WAITING
             text = "What will " + self.f_pokemon.name + " do?"
@@ -342,12 +363,21 @@ class Battle(object):
         self.all_boxes[-5] = pygame.transform.scale(self.all_boxes[-5], health_bar_scale_f)
         self.all_boxes[-4] = pygame.transform.scale(self.all_boxes[-4], health_bar_scale_e)
 
+        if not self.attack_animation:
+            if self.attack_anim.running:
+                self.attack_anim.render(self.screen, self.anim_pos)
+            else:
+                self.attack_animation = True
+        else:
+            self.attack_anim.reset()
+
         pygame.display.flip()
 
     def doDamage(self, user: Pokemon, target: Pokemon, move: Move, delta):
         if self.start_hp != -1:
             if target.current_hp > self.dest_hp and target.current_hp > 0:
-                target.current_hp -= max((self.start_hp - self.dest_hp) * (self.speed / 100) * (delta / 1000), 0)
+                target.current_hp -= (self.start_hp - self.dest_hp) * (self.speed / 100) * (delta / 1000)
+                target.current_hp = max(target.current_hp, 0)
             else:
                 target.current_hp = max(self.dest_hp, 0)
                 self.damaging = False
