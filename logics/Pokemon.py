@@ -17,7 +17,7 @@ class Pokemon(object):
         self.defense_ev = 0
         self.sp_attack_ev = 0
         self.sp_defense_ev = 0
-        self.speed_ev = 0
+        self.speed_ev = 50
         self.total_ev = self.hp_ev + self.attack_ev + self.defense_ev + self.sp_attack_ev + self.defense_ev + self.speed_ev
         self.pokemon = []
         try:
@@ -55,6 +55,7 @@ class Pokemon(object):
         self.sp_defense = math.floor((2 * self.get_stat('special-defense', 'base_stat') + self.iv + (self.sp_defense_ev / 4) * level) / 100 + 5)  # * nature
         self.mod_values = [0, 0, 0, 0, 0]
         self.moves = []
+        print(self.name, self.speed)
         for move in self.pokemon[0]['moves']:
             i = 0
             for version in move['version_group_details']:

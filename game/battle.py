@@ -1,15 +1,12 @@
 import pygame
-import json
 import math
 import random
-import pokebase as pb
 
 from game.BattleType import BattleType
 from game.BattleState import BattleState
 from graphics.GIFImage import GIFImage
 from logics.Move import Move
 from logics.Pokemon import Pokemon
-from PIL import Image
 
 
 class Battle(object):
@@ -127,6 +124,7 @@ class Battle(object):
         self.attack_animation = True
         self.moveUsed = False
         self.anim_pos = (0, 0)
+        self.order = (None, None)
 
     def parse_events(self, delta):
         self.frames += 1
@@ -191,13 +189,33 @@ class Battle(object):
             for c in text:
                 self.totalText.append(c)
         elif self.selection > 3 and self.state is BattleState.WAITING and enter_pressed:
-            self.state = BattleState.FRIENDLY_TURN
-            text = self.f_pokemon.name + " used " + str(self.f_pokemon.moves[self.selection - 4].name) + "!"
-            self.totalText = []
-            self.currentText = []
-            self.text = ''
-            for c in text:
-                self.totalText.append(c)
+            if self.f_pokemon.speed != self.e_pokemon.speed:
+                if self.f_pokemon.speed > self.e_pokemon.speed:
+                    self.order = (BattleState.FRIENDLY_TURN, BattleState.ENEMY_TURN)
+                else:
+                    self.order = (BattleState.ENEMY_TURN, BattleState.FRIENDLY_TURN)
+            else:
+                self.order = random.choice([(BattleState.FRIENDLY_TURN, BattleState.ENEMY_TURN),
+                                            (BattleState.ENEMY_TURN, BattleState.FRIENDLY_TURN)])
+            self.state = BattleState.START_TURNS
+        elif self.state is BattleState.START_TURNS:
+            if self.order[0] is BattleState.FRIENDLY_TURN:
+                self.state = BattleState.FRIENDLY_TURN
+                text = self.f_pokemon.name + " used " + str(self.f_pokemon.moves[self.selection - 4].name) + "!"
+                self.totalText = []
+                self.currentText = []
+                self.text = ''
+                for c in text:
+                    self.totalText.append(c)
+            else:
+                self.state = BattleState.ENEMY_TURN
+                self.enemyMove = random.choice(self.e_pokemon.moves)
+                text = self.e_pokemon.name + " used " + self.enemyMove.name + "!"
+                self.totalText = []
+                self.currentText = []
+                self.text = ''
+                for c in text:
+                    self.totalText.append(c)
         elif len(self.currentText) == len(self.totalText) and self.state is BattleState.FRIENDLY_TURN and enter_pressed:
             if self.f_pokemon.moves[self.selection - 4].move_class == "physical":
                 self.attack_animation = False
@@ -221,14 +239,58 @@ class Battle(object):
                 for c in text:
                     self.totalText.append(c)
                 return
-            self.state = BattleState.ENEMY_TURN
-            self.enemyMove = random.choice(self.e_pokemon.moves)
-            text = self.e_pokemon.name + " used " + self.enemyMove.name + "!"
-            self.totalText = []
-            self.currentText = []
-            self.text = ''
-            for c in text:
-                self.totalText.append(c)
+            if self.state != self.order[1]:
+                self.state = self.order[1]
+                self.enemyMove = random.choice(self.e_pokemon.moves)
+                text = self.e_pokemon.name + " used " + self.enemyMove.name + "!"
+                self.totalText = []
+                self.currentText = []
+                self.text = ''
+                for c in text:
+                    self.totalText.append(c)
+            else:
+                self.doneDamage = False
+                self.moveUsed = False
+                self.selection = 0
+                self.state = BattleState.WAITING
+                text = "What will " + self.f_pokemon.name + " do?"
+                self.totalText = []
+                self.currentText = []
+                self.text = ''
+                for c in text:
+                    self.totalText.append(c)
+        elif len(self.currentText) == len(self.totalText) \
+                and self.state is BattleState.ENEMY_TURN and self.doneDamage:
+            self.doneDamage = False
+            self.moveUsed = False
+            if self.f_pokemon.current_hp == 0:
+                self.endBattle = True
+                self.loser = self.f_pokemon
+                text = self.loser.name + " fainted!"
+                self.currentText = []
+                self.totalText = []
+                for c in text:
+                    self.totalText.append(c)
+                return
+            if self.state != self.order[1]:
+                self.state = self.order[1]
+                text = self.f_pokemon.name + " used " + self.f_pokemon.moves[self.selection - 4].name + "!"
+                self.totalText = []
+                self.currentText = []
+                self.text = ''
+                for c in text:
+                    self.totalText.append(c)
+            else:
+                self.doneDamage = False
+                self.moveUsed = False
+                self.selection = 0
+                self.state = BattleState.WAITING
+                text = "What will " + self.f_pokemon.name + " do?"
+                self.totalText = []
+                self.currentText = []
+                self.text = ''
+                for c in text:
+                    self.totalText.append(c)
         elif len(self.currentText) == len(self.totalText) \
                 and self.state is BattleState.ENEMY_TURN and enter_pressed:
             if self.enemyMove.move_class == "physical":
@@ -244,15 +306,13 @@ class Battle(object):
             self.selection = 4
         elif self.selection == 3 and enter_pressed:
             self.endBattle = True
-            text = "Succesfully got away!"
+            text = "Successfully got away!"
             self.totalText = []
             self.currentText = []
             self.text = ''
             for c in text:
                 self.totalText.append(c)
-        elif len(self.currentText) == len(self.totalText) and (
-                self.state is BattleState.START or BattleState.ENEMY_TURN) \
-                and (enter_pressed or self.doneDamage):
+        elif len(self.currentText) == len(self.totalText) and self.state is BattleState.START and enter_pressed:
             self.doneDamage = False
             self.moveUsed = False
             self.selection = 0

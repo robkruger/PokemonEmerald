@@ -131,7 +131,7 @@ class MapMaker(object):
             self.left_pressed = False
 
         if key_is_down(pygame.K_ESCAPE):
-            np.savez('data', self.tiles_holder, self.pokemon_strings)
+            np.savez('data2', self.tiles_holder, self.pokemon_strings)
             self.Running = False
 
         if self.load:

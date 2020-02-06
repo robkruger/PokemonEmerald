@@ -4,13 +4,12 @@ import pygame
 from game.BattleType import BattleType
 from game.Event import Event
 from game.battle import Battle
-from game.building import Building
 from graphics.Player import Player
 from graphics.Cell import Cell
 from graphics.CellHolder import CellHolder
 
 
-class Game(object):
+class Building(object):
     def __init__(self, map_path, window_size: tuple):
         pygame.init()
         pygame.display.set_caption('Overworld')
@@ -75,8 +74,6 @@ class Game(object):
         self.player.add_frames_down(self.walk_down)
         self.anim_count = 0
         self.battle = None
-        self.building = None
-        self.in_building = False
 
     def parse_events(self):
         self.clock.tick()
@@ -157,7 +154,6 @@ class Game(object):
             self.moving_up = False
             self.move_countdown = self.move_length
             self.player.set_pos((int(round(self.player.x)), int(round(self.player.y))))
-            self.event_handling(self.tiles_holder[self.player.y][self.player.x].event)
             return
         elif self.move_countdown - self.delta_time < 0:
             self.player.move((0, (-1 * (1000 / self.move_length)) *
@@ -172,7 +168,6 @@ class Game(object):
             self.moving_down = False
             self.move_countdown = self.move_length
             self.player.set_pos((int(round(self.player.x)), int(round(self.player.y))))
-            self.event_handling(self.tiles_holder[self.player.y][self.player.x].event)
             return
         elif self.move_countdown - self.delta_time < 0:
             self.player.move((0, (1 * (1000 / self.move_length)) *
@@ -187,7 +182,6 @@ class Game(object):
             self.moving_left = False
             self.move_countdown = self.move_length
             self.player.set_pos((int(round(self.player.x)), int(round(self.player.y))))
-            self.event_handling(self.tiles_holder[self.player.y][self.player.x].event)
             return
         elif self.move_countdown - self.delta_time < 0:
             self.player.move(((-1 * (1000 / self.move_length)) *
@@ -202,7 +196,6 @@ class Game(object):
             self.moving_right = False
             self.move_countdown = self.move_length
             self.player.set_pos((int(round(self.player.x)), int(round(self.player.y))))
-            self.event_handling(self.tiles_holder[self.player.y][self.player.x].event)
             return
         elif self.move_countdown - self.delta_time < 0:
             self.player.move(((1 * (1000 / self.move_length)) *
@@ -211,37 +204,6 @@ class Game(object):
             return
         self.player.move(((1 * (1000 / self.move_length)) * (self.delta_time / 1000), 0))
         self.move_countdown -= self.delta_time
-
-    def event_handling(self, event):
-        if event == Event.NONE:
-            # Nothing
-            return
-        elif event == Event.GRASS:
-            for p in self.pokemon_strings:
-                if np.random.randint(1, (1000 / int(p[1]))) == 1:
-                    print("Wild Pokemon! ", p[0], (1000 / int(p[1])), int(p[1]))
-                    self.Battling = True
-                    self.battle = Battle(BattleType.WILD, self.window_size, self, int(p[0]))
-        elif event == Event.NPC:
-            # TODO
-            # Start battle with npc trainer
-            return
-        elif event == Event.DOOR:
-            self.building = Building('data2.npz', (600, 400))
-            self.in_building = True
-            return
-
-    def parse_battle(self):
-        self.clock.tick()
-        self.delta_time = self.clock.get_time()
-        if self.battle.Battling is True:
-            self.battle.parse_events(self.delta_time)
-            self.battle.draw(pygame.time.get_ticks())
-        else:
-            self.battle = None
-            self.Battling = False
-            pygame.display.set_caption('Overworld')
-            self.set_repeat(True, 1, 1)
 
     def set_repeat(self, enabled=True, interval=0, delay=0):
         if enabled:
