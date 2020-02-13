@@ -1,5 +1,6 @@
 import pygame
 import numpy as np
+import glob
 
 from game.Event import Event
 from graphics.Cell import Cell
@@ -83,6 +84,10 @@ class MapMaker(object):
         self.show_sheet = True
         self.text_input = TextInput()
         self.pokemon_strings = []
+        self.maps = []
+        self.maps = glob.glob('./*.npz')
+        self.current_map = 0
+        self.switch = False
 
     def parse_events(self):
         self.frames += 1
@@ -93,8 +98,12 @@ class MapMaker(object):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_CAPSLOCK:
                     self.load = True
-                else:
+                if event.key != pygame.K_CAPSLOCK:
                     self.load = False
+                if event.key == pygame.K_TAB:
+                    self.switch = True
+                if event.key != pygame.K_TAB:
+                    self.switch = False
                 if pygame.key.get_mods() and pygame.KMOD_SHIFT:
                     self.show_event = not self.show_event
                 if event.key == pygame.K_LCTRL:
@@ -107,9 +116,9 @@ class MapMaker(object):
                     self.pokemon_strings = np.delete(self.pokemon_strings, len(self.pokemon_strings) - 1)
             else:
                 self.load = False
+                self.switch = False
 
         self.text_input.update(events)
-
 
     def draw(self):
         self.screen.fill((255, 255, 255))
@@ -131,13 +140,22 @@ class MapMaker(object):
             self.left_pressed = False
 
         if key_is_down(pygame.K_ESCAPE):
-            np.savez('data2', self.tiles_holder, self.pokemon_strings)
+            name = ''
+            if len(glob.glob('./*.npz')) != len(self.maps):
+                name = 'data' + str(len(self.maps) + 1)
+            else:
+                name = 'data' + str(self.current_map + 1)
+            np.savez(name, self.tiles_holder, self.pokemon_strings)
             self.Running = False
+
+        if self.switch:
+            self.current_map = (self.current_map + 1) % len(self.maps)
+            self.load = True
 
         if self.load:
             np_load_old = np.load
             np.load = lambda *a, **k: np_load_old(*a, allow_pickle=True, **k)
-            npzfile = np.load('data.npz')
+            npzfile = np.load(self.maps[self.current_map])
             self.tiles_holder = npzfile['arr_0']
             self.pokemon_strings = npzfile['arr_1']
             np.load = np_load_old

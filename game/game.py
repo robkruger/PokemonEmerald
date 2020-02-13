@@ -227,7 +227,7 @@ class Game(object):
             # Start battle with npc trainer
             return
         elif event == Event.DOOR:
-            self.building = Building('data2.npz', (600, 400))
+            self.building = Building('data2.npz', (600, 400), self)
             self.in_building = True
             return
 

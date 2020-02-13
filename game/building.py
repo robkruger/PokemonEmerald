@@ -10,7 +10,7 @@ from graphics.CellHolder import CellHolder
 
 
 class Building(object):
-    def __init__(self, map_path, window_size: tuple):
+    def __init__(self, map_path, window_size: tuple, game):
         pygame.init()
         pygame.display.set_caption('Overworld')
         icon = pygame.image.load('assets/logo.png')
@@ -74,6 +74,7 @@ class Building(object):
         self.player.add_frames_down(self.walk_down)
         self.anim_count = 0
         self.battle = None
+        self.game = game
 
     def parse_events(self):
         self.clock.tick()
@@ -83,7 +84,7 @@ class Building(object):
         keys = pygame.key.get_pressed()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.Running = False
+                self.game.Running = False
 
         if (keys[pygame.K_w] or keys[pygame.K_UP]) and not self.start_moving and not self.moving:
             if self.movable(self.player.x, self.player.y - 1):
@@ -204,6 +205,25 @@ class Building(object):
             return
         self.player.move(((1 * (1000 / self.move_length)) * (self.delta_time / 1000), 0))
         self.move_countdown -= self.delta_time
+
+    def event_handling(self, event):
+        if event == Event.NONE:
+            # Nothing
+            return
+        elif event == Event.GRASS:
+            for p in self.pokemon_strings:
+                if np.random.randint(1, (1000 / int(p[1]))) == 1:
+                    print("Wild Pokemon! ", p[0], (1000 / int(p[1])), int(p[1]))
+                    self.Battling = True
+                    self.battle = Battle(BattleType.WILD, self.window_size, self, int(p[0]))
+        elif event == Event.NPC:
+            # TODO
+            # Start battle with npc trainer
+            return
+        elif event == Event.DOOR:
+            self.game.building = None
+            self.game.in_building = False
+            return
 
     def set_repeat(self, enabled=True, interval=0, delay=0):
         if enabled:

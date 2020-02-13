@@ -11,7 +11,7 @@ from mapmaker.map_maker import MapMaker
 #
 # m.close()
 
-g = Game('data.npz', (600, 400))
+g = Game('data1.npz', (600, 400))
 # g.Battling = True
 # g.battle = Battle(BattleType.WILD, (600, 400), g, 1)
 
