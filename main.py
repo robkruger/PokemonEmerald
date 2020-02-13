@@ -3,7 +3,7 @@ from game.battle import Battle
 from game.game import Game
 from mapmaker.map_maker import MapMaker
 
-# m = MapMaker((600, 400), (10, 15), (1408, 0))
+# m = MapMaker((600, 1024), (10, 15), (2472, 0))
 #
 # while m.Running:
 #     m.parse_events()
@@ -19,11 +19,11 @@ while g.Running:
     if g.in_building:
         if g.building.Running:
             g.building.parse_events()
-            g.building.draw()
+            if g.building.Running:
+                g.building.draw()
         else:
             g.building = None
             g.in_building = False
-            g.player.move((0, 1))
             g.player.set_anim(False, False, False, True)
     elif not g.Battling:
         g.parse_events()

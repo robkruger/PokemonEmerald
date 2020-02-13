@@ -35,7 +35,7 @@ class Building(object):
         self.tiles = np.zeros(self.tiles_holder.shape, dtype=object)
         self.sprite_group = pygame.sprite.Group()
         self.player_group = pygame.sprite.Group()
-        self.sprite_sheet = pygame.image.load('assets/exterior.png').convert_alpha()
+        self.sprite_sheet = pygame.image.load('assets/interior.png').convert_alpha()
         self.player_sheet = pygame.image.load('assets/player.png').convert_alpha()
         self.player_sheet_rect = self.player_sheet.get_rect()
         self.cell_size = 37
@@ -67,14 +67,22 @@ class Building(object):
         # self.run_up = [(15, 66), (15, 88), (15, 110)]
         # self.player = Player(0, 0, 15, 0, (14, 21), self.cell_size / 16, 22, 15, self.cell_size, self.player_group,
         #                      self.player_sheet)
-        self.player = Player(150, True, 0, 0, (14, 21), self.cell_size / 16, self.cell_size, 22, 15,
+        self.player = Player(150, True, int(self.tiles_holder.shape[1] / 2), self.tiles_holder.shape[0] - 1, (14, 21),
+                             self.cell_size / 16, self.cell_size, 22, 15,
                              self.player_sheet, self.player_group)
+        self.starting_point = (int(self.tiles_holder.shape[1] / 2), self.tiles_holder.shape[0] - 1)
         self.player.add_frames_up(self.walk_up)
         self.player.add_frames_left(self.walk_left)
         self.player.add_frames_down(self.walk_down)
         self.anim_count = 0
         self.battle = None
         self.game = game
+        self.carpet_group = pygame.sprite.Group()
+        carpet1 = Cell(int(self.tiles_holder.shape[1] / 2) - 0.5, self.tiles_holder.shape[0] - 0.75, 10, 32, 16, self.cell_size / 16,
+                       22, 15, self.carpet_group, self.sprite_sheet, True, 4)
+        carpet2 = Cell(int(self.tiles_holder.shape[1] / 2) + 0.5, self.tiles_holder.shape[0] - 0.75, 11, 32, 16, self.cell_size / 16,
+                       22, 15, self.carpet_group, self.sprite_sheet, True, 4)
+        self.carpet = (carpet1, carpet2)
 
     def parse_events(self):
         self.clock.tick()
@@ -92,6 +100,9 @@ class Building(object):
             else:
                 self.player.set_anim(True, False, False, False)
         elif (keys[pygame.K_s] or keys[pygame.K_DOWN]) and not self.start_moving and not self.moving:
+            if self.player.x == self.starting_point[0] and self.player.y == self.starting_point[1]:
+                self.Running = False
+                return
             if self.movable(self.player.x, self.player.y + 1):
                 self.start_moving_down = True
             else:
@@ -146,6 +157,7 @@ class Building(object):
         self.screen.fill((255, 255, 255))
 
         self.sprite_group.draw(self.screen)
+        self.carpet_group.draw(self.screen)
         self.player_group.draw(self.screen)
 
         pygame.display.flip()

@@ -10,6 +10,7 @@ class Player(pygame.sprite.Sprite):
         self.image.blit(sprite_sheet, (0, 0), rect)
         self.image = pygame.transform.scale(self.image, (int(size[0] * scale + 4), int(size[1] * scale)))
         self.rect = self.image.get_rect()
+        print(x, y)
         self.rect.x = x * 16 * scale + offset_w
         self.rect.y = y * 16 * scale + offset_h - int(cell_size / 2 + 0.5)
         self.current_time = 0

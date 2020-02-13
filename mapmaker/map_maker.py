@@ -38,7 +38,7 @@ class MapMaker(object):
         self.texture_tiles_holder = np.zeros(int(texture_select_size[0] / 16) * int(window_size[1] / 16),
                                              dtype=object).reshape(int(texture_select_size[0] / 16),
                                                                    int(window_size[1] / 16))
-        self.sprite_sheet = pygame.image.load('assets/exterior.png').convert_alpha()
+        self.sprite_sheet = pygame.image.load('assets/interior.png').convert_alpha()
         self.sprite_sheet_rect = self.sprite_sheet.get_rect()
         self.sprite_sheet_rect.x = window_size[0]
         # self.sprite_select_group = pygame.sprite.Group(self.sprite_sheet)
@@ -66,8 +66,8 @@ class MapMaker(object):
             for y in range(self.grid_height):
                 c: CellHolder
                 c = self.tiles_holder[y][x]
-                self.tiles[y][x] = Cell(c.x, c.y, c.sheet_x, c.sheet_y, 16, self.cell_size / 16, c.offset_w,
-                                        c.offset_h, self.sprite_group, self.sprite_sheet, c.movable, c.event)
+                self.tiles[y][x] = Cell(c.x, c.y, c.sheet_x, c.sheet_y, 16, self.cell_size / 16, self.offset_width,
+                                        self.offset_height, self.sprite_group, self.sprite_sheet, c.movable, c.event)
 
         # for x in range(self.texture_tiles_holder.shape[0]):
         #     for y in range(self.texture_tiles_holder.shape[1]):
@@ -163,8 +163,9 @@ class MapMaker(object):
                 for y in range(self.tiles_holder.shape[1]):
                     c: CellHolder
                     c = self.tiles_holder[x][y]
-                    self.tiles[x][y] = Cell(c.x, c.y, c.sheet_x, c.sheet_y, c.size, self.cell_size / 16, c.offset_w,
-                                            c.offset_h, self.sprite_group, self.sprite_sheet, c.movable, c.event)
+                    self.tiles[x][y] = Cell(c.x, c.y, c.sheet_x, c.sheet_y, c.size, self.cell_size / 16,
+                                            self.offset_width, self.offset_height, self.sprite_group, self.sprite_sheet,
+                                            c.movable, c.event)
 
         self.grid_select_x = int((pygame.mouse.get_pos()[0] - self.offset_width) / self.cell_size)
         self.grid_select_y = int((pygame.mouse.get_pos()[1] - self.offset_height) / self.cell_size)
@@ -243,16 +244,16 @@ class MapMaker(object):
             for y in range(self.tiles_holder.shape[1]):
                 if not self.tiles_holder[x][y].movable:
                     self.draw_cross(
-                        pygame.Rect((self.tiles_holder[x][y].x * self.cell_size + self.tiles_holder[x][y].offset_w,
-                                     self.tiles_holder[x][y].y * self.cell_size + self.tiles_holder[x][y].offset_h),
+                        pygame.Rect((self.tiles_holder[x][y].x * self.cell_size + self.offset_width,
+                                     self.tiles_holder[x][y].y * self.cell_size + self .offset_height),
                                     (self.cell_size, self.cell_size)))
 
         if self.show_event:
             for x in range(self.tiles_holder.shape[0]):
                 for y in range(self.tiles_holder.shape[1]):
                     textsurface = self.font.render(str(self.tiles_holder[x][y].event.value), True, (255, 255, 255))
-                    self.screen.blit(textsurface, (y * self.cell_size + 22 + self.cell_size / 4,
-                                                   x * self.cell_size + 15 - self.cell_size / 8))
+                    self.screen.blit(textsurface, (y * self.cell_size + 22 + self.offset_width,
+                                                   x * self.cell_size + 15 + self.offset_height))
 
         if pygame.mouse.get_pos()[0] < self.window_size[0]:
             pygame.draw.rect(self.screen, [0, 0, 0],
